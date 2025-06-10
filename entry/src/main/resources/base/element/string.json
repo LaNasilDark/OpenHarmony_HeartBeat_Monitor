@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "HarmonyOS 监控应用模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "设备监控应用主界面"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "监控应用"
+    },
+    {
+      "name": "reason_internet",
+      "value": "需要网络权限进行设备监控和数据传输"
+    },
+    
+    {
+      "name": "reason_wifi_info",
+      "value": "需要wifi权限进行设备监控和数据传输"
+    },
+    
+    {
+      "name": "reason_network_info",
+      "value": "需要获取网络信息权限来监控网络状态"
+    },
+
+    {
+      "name": "reason_sys_info",
+      "value": "需要获取网络信息权限来监控网络状态"
+    }
+    
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "ohos-module-entry": {
+    "SELECT_TARGET": "default",
+    "MODULE_BUILD_DIR": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build",
+    "DEPENDENCY_INFO": {},
+    "TARGETS": {
+      "default": {
+        "SOURCE_ROOT": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\src\\main",
+        "RESOURCES_PATH": [
+          "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\src\\main\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\outputs\\default",
+          "INTERMEDIA_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader_out\\default",
+          "JS_LITE_ASSETS_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader_out_lite\\default",
+          "RES_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\res\\default",
+          "RES_PROFILE_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\res\\default\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\cache\\default\\default@CompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\cache\\default\\default@CompileJS\\jsbundle",
+          "WORKER_LOADER": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader\\default\\loader.json",
+          "MANIFEST_JSON": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\manifest\\default",
+          "OUTPUT_METADATA_JSON": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\hap_metadata\\default\\output_metadata.json",
+          "SOURCE_MAP_DIR": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\source_map\\default"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      },
+      "ohosTest": {
+        "SOURCE_ROOT": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\src\\ohosTest",
+        "RESOURCES_PATH": [
+          "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\src\\ohosTest\\resources"
+        ],
+        "BUILD_PATH": {
+          "OUTPUT_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\outputs\\ohosTest",
+          "INTERMEDIA_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates",
+          "JS_ASSETS_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader_out\\ohosTest",
+          "JS_LITE_ASSETS_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader_out_lite\\ohosTest",
+          "RES_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\res\\ohosTest",
+          "RES_PROFILE_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\res\\ohosTest\\resources\\base\\profile",
+          "ETS_SUPER_VISUAL_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileArkTS\\esmodule",
+          "JS_SUPER_VISUAL_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\cache\\ohosTest\\ohosTest@OhosTestCompileJS\\jsbundle",
+          "WORKER_LOADER": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\loader\\ohosTest\\loader.json",
+          "MANIFEST_JSON": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\manifest\\ohosTest",
+          "OUTPUT_METADATA_JSON": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\hap_metadata\\ohosTest\\output_metadata.json",
+          "SOURCE_MAP_DIR": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry\\build\\default\\intermediates\\source_map\\ohosTest"
+        },
+        "BUILD_OPTION": {
+          "debuggable": true
+        }
+      }
+    },
+    "BUILD_OPTION": {
+      "default-default": {
+        "debuggable": true,
+        "copyFrom": "default",
+        "name": "debug"
+      }
+    },
+    "BUILD_PROFILE_OPT": {
+      "apiType": "stageMode",
+      "buildOption": {},
+      "buildOptionSet": [
+        {
+          "name": "release",
+          "arkOptions": {
+            "obfuscation": {
+              "ruleOptions": {
+                "enable": false,
+                "files": [
+                  "./obfuscation-rules.txt"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "default"
+        },
+        {
+          "name": "debug"
+        }
+      ],
+      "targets": [
+        {
+          "name": "default"
+        },
+        {
+          "name": "ohosTest"
+        }
+      ]
+    },
+    "BUILD_CACHE_DIR": ""
+  },
+  "ohos-project": {
+    "SELECT_PRODUCT_NAME": "default",
+    "MODULE_BUILD_DIR": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\build",
+    "BUNDLE_NAME": "com.example.openharmony_test_app",
+    "BUILD_PATH": {
+      "OUTPUT_PATH": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\build\\outputs\\default"
+    },
+    "MODULES": [
+      {
+        "name": "entry",
+        "srcPath": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\entry",
+        "targets": [
+          {
+            "name": "default",
+            "applyToProducts": [
+              "default"
+            ]
+          }
+        ],
+        "belongProjectPath": "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP"
+      }
+    ],
+    "PROFILE_OPT": {
+      "app": {
+        "signingConfigs": [
+          {
+            "name": "default",
+            "material": {
+              "certpath": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.cer",
+              "keyAlias": "debugKey",
+              "keyPassword": "0000001B29A802936F56A63DDDD696C5D2BA63D840597D270850A79EEDE4E598FE047FEDCB424C072D6E00",
+              "profile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p7b",
+              "signAlg": "SHA256withECDSA",
+              "storeFile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p12",
+              "storePassword": "0000001B3E1ACB15CA2181C67E6E70E330242D9EA88599705411DC45F6F66C3C41FAE88745C65009FD7090"
+            }
+          }
+        ],
+        "products": [
+          {
+            "name": "default",
+            "signingConfig": "default",
+            "compatibleSdkVersion": 12,
+            "compileSdkVersion": 12,
+            "targetSdkVersion": 12,
+            "runtimeOS": "OpenHarmony"
+          }
+        ],
+        "buildModeSet": [
+          {
+            "name": "debug"
+          },
+          {
+            "name": "release"
+          }
+        ]
+      },
+      "modules": [
+        {
+          "name": "entry",
+          "srcPath": "./entry",
+          "targets": [
+            {
+              "name": "default",
+              "applyToProducts": [
+                "default"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "CONFIG_PROPERTIES": {
+      "enableSignTask": true,
+      "skipNativeIncremental": false,
+      "hvigor.keepDependency": true
+    },
+    "OVERALL_PROJECT_PATHS": [
+      "C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP"
+    ],
+    "BUILD_CACHE_DIR": ""
+  },
+  "version": 1
+}
