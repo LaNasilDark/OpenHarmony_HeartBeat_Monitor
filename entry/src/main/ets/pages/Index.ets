@@ -56,7 +56,7 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': Done, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '0.0.3'?}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
 async function fetchMacAddress(): Promise<string> {
   const macFilePath = '/sys/class/net/wlan0/address'; // 假设使用 wlan0 接口
   return await readSystemFileContent(macFilePath);
@@ -196,15 +196,6 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateTimeGlobal();
   await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
 })();
-
-
-
-
-
-
-
-
-
 
 
 
