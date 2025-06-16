@@ -86,7 +86,7 @@ def load_dict_from_json():
         pass
     return {}
 
-def change_code_server_password(new_password):
+def change_code_server_password(new_password):      #无任何地方调用
     config_file = os.path.expanduser('~/.config/code-server/config.yaml')
     try:
         with open(config_file, 'r') as file:
@@ -117,7 +117,7 @@ def calculate_checksum(data):
     return s
 
 
-def build_udp_packet(udp_msg):
+def build_udp_packet(udp_msg): #json.dumps
     udp_msg = bytes(udp_msg, encoding='utf-8')
     checksum = calculate_checksum(udp_msg)
     packet = struct.pack('!H', checksum) + udp_msg
@@ -159,7 +159,7 @@ async def run_command_with_timeout(command, timeout=2, callback=None, ex_callbac
         print(f'time out error: {command} {timeout}')
         return TIMEOUE
 
-def search_node():
+def search_node(): #无任何调用
     mac, _ = get_interface_mac_ip()
     global node_ip
     node_flag = 'node:'
@@ -173,9 +173,11 @@ def send_udp_broadcast(info_dict):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     broadcast_address = ('255.255.255.255', 18887)
+
     message =  build_udp_packet(json.dumps(info_dict))
-    client_socket.sendto(message, broadcast_address)
-    try:
+    client_socket.sendto(message, broadcast_address) #发送二进制msg到addr
+    
+    try: #返回接受到的第一个响应
         client_socket.settimeout(5)
         while True:
             packet, addr = client_socket.recvfrom(1024)
@@ -190,9 +192,7 @@ def send_udp_broadcast(info_dict):
     finally:
         client_socket.close()
 
-
-
-def get_interface_mac_ip(intf = 'end0'):
+def get_interface_mac_ip(intf = 'end0'): #本机IP?
     interfaces = netifaces.interfaces()
     for interface in interfaces:
         addrs = netifaces.ifaddresses(interface)
@@ -202,6 +202,9 @@ def get_interface_mac_ip(intf = 'end0'):
     return None, None
 
 def check_updater_url():
+    """
+    can_use_urls = ['http://10.0.56.20:8081/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.bianbu.xyz/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.spacemit.com/resource/install_update.sh']
+    """
     global update_url
     for url in can_use_urls:
         if is_webpage_accessible_urllib(url):
@@ -223,7 +226,7 @@ async def check_updater_service():
 async def set_ip(ip, netmask='255.255.254.0', gw='10.0.71.254', dns=None):
     if dns is None:
         dns = ['8.8.8.8']
-    if not await configure_network(will_interface, ip, gw, netmask, dns):
+    if not await configure_network(will_interface, ip, gw, netmask, dns): 
         await run_command_with_timeout(f'ifconfig {will_interface} down')
         await asyncio.sleep(10)
         await run_command_with_timeout(f'ifconfig {will_interface} {ip} netmask {netmask} up')
@@ -304,6 +307,7 @@ def is_network_interface_down(interface_name):
         print(f"读取网卡状态文件时出现错误: {e}")
         return True
 
+# 读取一系列设备数据
 def read_sn():
     file_path = '/proc/device-tree/serial-number'
     sn_str = cat_file(file_path)
@@ -315,7 +319,7 @@ def read_tmp():
     file_path = '/sys/class/thermal/thermal_zone0/temp'
     return cat_file(file_path)
 
-def get_uptime_days():
+def get_uptime_days(): #/proc/uptime读取
     boot_time = psutil.boot_time()
     current_time = time.time()
     uptime_seconds = current_time - boot_time
@@ -323,14 +327,15 @@ def get_uptime_days():
     return uptime_days
 
 sn = read_sn()
+
 async def monitor_device():
     monitor_info = {}
     # 获取 CPU 占用率
-    cpu_percent = psutil.cpu_percent(interval=1)
+    cpu_percent = psutil.cpu_percent(interval=1) #proc/stat 
     monitor_info['cpuLoad'] = cpu_percent
 
     # 获取内存信息
-    memory = psutil.virtual_memory()
+    memory = psutil.virtual_memory() #proc/meminfo
     total_memory = memory.total
     memory_percent = memory.percent
     memory_used = memory.used
@@ -338,7 +343,7 @@ async def monitor_device():
     monitor_info['memInfo'] = {'memTotal': round(total_memory, 2), 'memLoad': round(memory_percent, 2), 'memUsed': round(memory_used, 2),  'memAvailable': round(memory_av, 2), 'unit': 'Byte'}
 
     # 获取磁盘信息
-    disk = psutil.disk_usage('/')
+    disk = psutil.disk_usage('/') #proc/diskstats
     total_disk = disk.total
     disk_percent = disk.percent
     disk_used = disk.used
@@ -346,7 +351,7 @@ async def monitor_device():
     monitor_info['disk'] = {'mounted':'/', 'available':round(disk_av, 2),  'total': round(total_disk, 2), 'percent': int(disk_percent), 'used': round(disk_used, 2), 'unit': 'Byte'}
 
     # 获取网络上下行速率
-    net_io_counters1 = psutil.net_io_counters()
+    net_io_counters1 = psutil.net_io_counters() #proc/net/dev
     bytes_sent1 = net_io_counters1.bytes_sent
     bytes_recv1 = net_io_counters1.bytes_recv
 
@@ -361,6 +366,7 @@ async def monitor_device():
     send_rate = bytes_sent2 - bytes_sent1
     recv_rate = bytes_recv2 - bytes_recv1
     monitor_info['net'] = {'netInterface': '', 'txByte': bytes_sent2, 'txRate': send_rate, 'rxByte': bytes_recv2, 'rxRate': recv_rate, 'unit': 'Bytes/s'}
+    
     mac, ip = get_interface_mac_ip(will_interface)
     monitor_info['mac'] = mac
     monitor_info['ip'] = ip
@@ -440,6 +446,7 @@ async def find_connectable_nics():
 async def run_main():
     global will_interface
     global will_ip
+    #init
     try:
         nics = await find_connectable_nics()
         if nics: # 简化条件判断
@@ -458,18 +465,26 @@ async def run_main():
                 await deal_set_ip(record_cmd)
     except Exception as e: # 捕获并打印初始化阶段的错误
         print(f"初始化网络设置时发生错误: {e}")
+    # check update
     check_updater_url()
+    
     while True:
+        #启动时间
         start_time = time.time()
+        
         try:
             if is_network_interface_down(will_interface):
                 if will_ip is None:
                     await run_command_with_timeout(f'ifconfig {will_interface} up')
                 else:
                     await set_ip(will_ip)
+
             monitor_info = await monitor_device()
-            msg = send_udp_broadcast(monitor_info)
+            
+            msg = send_udp_broadcast(monitor_info) #上游发回的响应
+
             await handle_msg_fun(msg)
+            
             await check_updater_service()
         except Exception as error:
             print(f"主循环中发生错误: {error}") # 使用 f-string 并提供更明确的错误信息
