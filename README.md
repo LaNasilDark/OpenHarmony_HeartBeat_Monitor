@@ -5,6 +5,7 @@
 ## 项目概述
 
 本项目是一个基于 UDP 通信的设备监控系统，包括：
+
 - **OpenHarmony 应用**：运行在设备上，定期发送设备状态信息
 - **Python 监控服务器**：接收设备数据，提供系统管理功能
 - **UDP 通信工具**：支持广播和点对点通信
@@ -24,6 +25,7 @@ OpenHarmony 设备          网络          监控服务器
 ## 主要功能
 
 ### OpenHarmony 应用端
+
 - ✅ **设备信息采集**
   - 实时 CPU 温度监控
   - 动态 IP 地址获取
@@ -38,6 +40,7 @@ OpenHarmony 设备          网络          监控服务器
   - 状态指示器
 
 ### Python 服务器端
+
 - ✅ **网络监控**
   - UDP 数据包接收
   - 广播消息处理
@@ -77,11 +80,13 @@ OpenHarmony_Test_APP/
 ### 1. OpenHarmony 应用部署
 
 #### 环境要求
-- OpenHarmony SDK 3.2+
-- DevEco Studio 4.0+
+
+- OpenHarmony SDK 5.0.0.17
+- DevEco Studio 5.0.5
 - 目标设备：OpenHarmony 系统
 
 #### 安装步骤
+
 ```bash
 # 1. 克隆项目
 git clone <repository-url>
@@ -98,12 +103,14 @@ TARGET_UDP_PORT: 9990
 ### 2. Python 监控服务器部署
 
 #### 环境要求
+
 ```bash
 # Python 3.8+
 pip install psutil netifaces PyYAML
 ```
 
 #### 启动服务器
+
 ```bash
 # 启动完整监控服务
 python monitor_run.py
@@ -115,6 +122,7 @@ python udp_listener.py
 ## 配置说明
 
 ### 网络配置
+
 ```typescript
 // OpenHarmony 应用配置 (Index.ets)
 const TARGET_UDP_IP: string = "10.0.90.241";    // 服务器 IP
@@ -130,6 +138,7 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 ```
 
 ### 数据格式
+
 ```json
 {
   "ipAddress": "10.0.90.100",
@@ -144,6 +153,7 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 ### 核心函数
 
 #### OpenHarmony 端
+
 ```typescript
 // 读取系统文件
 async function readSystemFileContent(filePath: string): Promise<string>
@@ -157,6 +167,7 @@ async function sendDeviceInfoViaUDP(): Promise<void>
 ```
 
 #### Python 端
+
 ```python
 # 数据包处理
 def build_udp_packet(udp_msg: str) -> bytes
@@ -174,6 +185,7 @@ def get_uptime_days() -> int
 ## 使用示例
 
 ### 启动设备监控
+
 ```typescript
 // OpenHarmony 应用中
 await this.startMonitorService();
@@ -181,6 +193,7 @@ await this.startMonitorService();
 ```
 
 ### 服务器接收数据
+
 ```python
 # Python 服务器
 import asyncio
@@ -193,6 +206,7 @@ asyncio.run(main())
 ```
 
 ### UDP 广播通信
+
 ```python
 # 发送设备发现广播
 device_info = {
@@ -208,6 +222,7 @@ response = send_udp_broadcast(device_info)
 ### 常见问题
 
 #### 1. UDP 通信失败
+
 ```bash
 # 检查防火墙设置
 sudo ufw allow 9990/udp
@@ -220,6 +235,7 @@ netstat -ulnp | grep 9990
 ```
 
 #### 2. 设备信息获取失败
+
 ```typescript
 // 检查文件权限
 // /sys/class/thermal/thermal_zone0/temp
@@ -227,6 +243,7 @@ netstat -ulnp | grep 9990
 ```
 
 #### 3. Python 依赖问题
+
 ```bash
 # 安装缺失的包
 pip install psutil netifaces PyYAML
@@ -238,11 +255,13 @@ pip install psutil netifaces PyYAML
 ## 性能优化
 
 ### OpenHarmony 端
+
 - 使用定时器控制发送频率
 - 实现错误重试机制
 - 优化内存使用
 
 ### Python 端
+
 - 异步处理多设备连接
 - 数据缓存机制
 - 连接池管理
@@ -250,11 +269,12 @@ pip install psutil netifaces PyYAML
 ## 安全注意事项
 
 1. **网络安全**
+
    - 使用 HTTPS 进行敏感配置
    - 验证数据包来源
    - 限制广播频率
-
 2. **权限控制**
+
    - 最小权限原则
    - 文件访问控制
    - 网络访问限制
@@ -262,30 +282,20 @@ pip install psutil netifaces PyYAML
 ## 开发指南
 
 ### 扩展功能
+
 1. 添加新的监控指标
 2. 实现数据持久化
 3. 支持多种通信协议
 4. 添加 Web 管理界面
 
-### 代码贡献
-1. Fork 项目
-2. 创建功能分支
-3. 提交 Pull Request
-4. 代码审查
+## 技术支持(真的会有吗？)
 
-## 许可证
-
-本项目采用 MIT 许可证。详情请参见 LICENSE 文件。
-
-## 技术支持
-
-- 📧 Email: support@example.com
-- 📋 Issues: GitHub Issues
-- 📖 Wiki: 项目 Wiki 页面
+- 📧 Email: 123090669@link.cuhk.edu.cn
 
 ## 更新日志
 
 ### v1.0.0 (2025-06-16)
+
 - ✅ 初始版本发布
 - ✅ 基础 UDP 通信功能
 - ✅ 设备信息监控
