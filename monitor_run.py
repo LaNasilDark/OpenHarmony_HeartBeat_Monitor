@@ -369,7 +369,7 @@ async def monitor_device():
     monitor_info['net'] = {'netInterface': '', 'txByte': bytes_sent2, 'txRate': send_rate, 'rxByte': bytes_recv2, 'rxRate': recv_rate, 'unit': 'Bytes/s'}
     
     mac, ip = get_interface_mac_ip(will_interface)
-    monitor_info['mac'] = mac
+    monitor_info['mac'] = mac 
     monitor_info['ip'] = ip
     monitor_info['upTime'] = get_uptime_days()
     monitor_info['time'] = time.time()

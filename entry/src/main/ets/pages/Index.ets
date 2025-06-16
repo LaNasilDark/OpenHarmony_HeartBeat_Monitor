@@ -10,7 +10,8 @@ interface DeviceInfo {
   ipAddress: string;
   cpuTemperature: string;
   sn: string;
-  time: string; 
+  time: string;
+  mac: string;  
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -30,6 +31,7 @@ const LOCAL_UDP_PORT: number = 9991; // <-- 新增：定义本地UDP绑定的端
 let cpuTemp: string = 'Loading...';
 let sn: string = 'Loading...';
 let time: string = 'Loading...';
+let mac: string = 'Loading...';
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -54,9 +56,26 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': None, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '0.0.3'?}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': Done, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '0.0.3'?}
+async function fetchMacAddress(): Promise<string> {
+  const macFilePath = '/sys/class/net/wlan0/address'; // 假设使用 wlan0 接口
+  return await readSystemFileContent(macFilePath);
+}
+async function updateMacGlobal(): Promise<void> {
+  try {
+    mac = await fetchMacAddress();
+    if (mac === 'N/A') {
+      mac = 'NoMAC'; // 如果无法获取MAC地址，设置为默认值
+    }
+    hilog.info(DOMAIN, TAG, `Global MAC updated: ${mac}`);
+  } catch (error) {
+    mac = 'ErrorFetchingMAC'; // 或者其他错误指示字符串
+    hilog.error(DOMAIN, TAG, `Failed to update global MAC: ${JSON.stringify(error)}`);
+  }
+}
+
 async function fetchSystemTime(): Promise<string> {
-  const currentTime = await systemDateTime.getCurrentTime() / 1000; // 获取当前的 Date 对象
+  const currentTime = await systemDateTime.getCurrentTime(true) / 1000000000; // 获取当前的 Date 对象
   return currentTime.toString();
 }
 async function updateTimeGlobal(): Promise<void> {
@@ -68,7 +87,6 @@ async function updateTimeGlobal(): Promise<void> {
     hilog.error(DOMAIN, TAG, `Failed to update global time: ${JSON.stringify(error)}`);
   }
 }
-
 
 async function fetchCpuTemperature(): Promise<string> {
   const thermalFilePath = '/sys/class/thermal/thermal_zone0/temp';
@@ -113,7 +131,7 @@ async function fetchSN(): Promise<string> {
   const snFilePath = '/proc/device-tree/serial-number';
   return await readSystemFileContent(snFilePath);
 }
-async function updateGlobalSn(): Promise<void> {
+async function updateSnGlobal(): Promise<void> {
   try {
     sn = await fetchSN();
     hilog.info(DOMAIN, TAG, `Global SN updated: ${sn}`);
@@ -129,14 +147,16 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     // 1. 确保 CPU 温度是最新的
     await updateCpuTempGlobal();
     await updateLocalIpGlobal();
-    await updateGlobalSn();
-    await updateTimeGlobal(); 
+    await updateSnGlobal();
+    await updateTimeGlobal();
+    await updateMacGlobal(); // 确保 MAC 地址是最新的 
     // 2. 准备要发送的数据
     const deviceInfo: DeviceInfo = { // 使用定义的接口
       ipAddress: localIp,
       cpuTemperature: cpuTemp,
       sn: sn,
-      time: time // 添加时间字段 
+      time: time,
+      mac: mac // 新增 MAC 地址字段
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -172,8 +192,9 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
 (async () => {
   await updateCpuTempGlobal();
   await updateLocalIpGlobal();
-  await updateGlobalSn();
-  await updateTimeGlobal(); // 初始化时获取时间
+  await updateSnGlobal();
+  await updateTimeGlobal();
+  await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
 })();
 
 
@@ -269,9 +290,16 @@ struct Index {
       const startMsg = 'Starting monitor service...';
       hilog.info(DOMAIN, TAG, startMsg);
       this.addLog(startMsg);
+      
       await updateLocalIpGlobal(); // 确保在启动服务前获取最新的本地IP
       this.addLog("本机IP为" + localIp);
+      
+      await updateMacGlobal(); // 确保在启动服务前获取最新的MAC地址
+      this.addLog("设备MAC地址为" + mac);
+      
+      await updateSnGlobal(); // 确保在启动服务前获取最新的SN
       this.addLog("设备SN为" + sn);
+      
       await updateCpuTempGlobal(); // 确保在启动服务前获取最新的 CPU 温度
       this.addLog("CPU温度为" + cpuTemp + "°C");
 
