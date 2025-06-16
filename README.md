@@ -1,101 +1,292 @@
-# OpenHarmony UDP 设备监控应用
+# OpenHarmony 设备监控系统
 
-## 描述
+一个完整的 OpenHarmony 设备监控解决方案，包含设备端应用和服务器端监控工具。
 
-这是一个为 OpenHarmony 操作系统开发的测试应用程序。它演示了以下功能：
-- 检索设备信息，例如本地 IP 地址和 CPU 温度。
-- 通过 UDP 将此信息定期发送到指定的目标 IP 和端口。
-- 提供一个简单的用户界面来启动和停止监控服务。
-- 记录应用程序事件和 UDP 通信状态。
+## 项目概述
 
-## 特性
+本项目是一个基于 UDP 通信的设备监控系统，包括：
+- **OpenHarmony 应用**：运行在设备上，定期发送设备状态信息
+- **Python 监控服务器**：接收设备数据，提供系统管理功能
+- **UDP 通信工具**：支持广播和点对点通信
 
-- **设备信息检索:** 获取并显示设备的本地 IP 地址和 CPU 温度。
-- **UDP 通信:**
-    - 通过 UDP 以 JSON 有效负载形式发送设备信息（IP、CPU 温度）。
-    - 可配置用于发送 UDP 数据包的目标 IP 和端口。
-    - 绑定到特定的本地 UDP 端口进行发送。
-- **定期更新:** 监控服务启动后，设备信息会以固定间隔（例如，每5秒）通过 UDP 发送。
-- **用户界面:**
-    - 显示当前服务状态（运行中/已停止）。
-    - 用于启动/停止监控服务的按钮。
-    - 在应用程序内显示运行时日志。
-- **实时数据更新:** CPU 温度和本地 IP 在每次 UDP 传输前以及服务启动时更新。
+## 系统架构
 
-## 安装与运行
-
-1.  **环境设置:** 确保您已安装并配置了 OpenHarmony SDK 和 DevEco Studio IDE。
-2.  **导入项目:** 在 DevEco Studio 中打开此项目。
-3.  **编译项目:** 使用 DevEco Studio 编译生成 HAP 文件。
-    *   通常，这包括同步项目，然后单击“Build HAP(s)”或“Run”按钮（这也会执行编译）。
-4.  **在设备/模拟器上运行:**
-    *   连接 OpenHarmony 设备或启动模拟器。
-    *   在 DevEco Studio 中选择目标设备。
-    *   单击“Run 'entry'”按钮来部署和运行应用程序。
-
-## 使用说明
-
-1.  在您的 OpenHarmony 设备上启动应用程序。
-2.  主屏幕将显示 "OpenHarmony Heartbeat Monitor Beta"。
-3.  **目标 IP/端口:** 应用程序预配置为将 UDP 数据发送到 `10.0.90.241:9990`，并将本地发送套接字绑定到端口 `9991`。这些常量定义在 `entry/src/main/ets/pages/Index.ets` 文件中。
-4.  **启动监控:** 点击 "启动监控服务" 按钮。
-    *   应用程序将尝试绑定 UDP 套接字。
-    *   它将获取当前的 IP 地址和 CPU 温度。
-    *   包含此信息的初始 UDP 数据包将被发送。
-    *   一个计时器将启动，每5秒发送一次 UDP 数据包。
-    *   服务状态将更改为 "监控服务已启动"。
-    *   日志将显示在屏幕上的可滚动日志视图中。
-5.  **停止监控:** 点击 "停止监控服务" 按钮。
-    *   定期的 UDP 发送将停止。
-    *   服务状态将更改为 "监控服务已停止"。
-6.  **查看日志:** 运行时日志，包括 UDP 发送状态和错误，会显示在应用的 UI 中。
-
-## 关键文件
-
--   `entry/src/main/ets/pages/Index.ets`: 包含 OpenHarmony 应用程序的主要 UI 逻辑、UDP 通信和设备信息检索。
--   `udp_listener.py`: (可选的配套工具) 一个 Python UDP 监听器脚本，用于在目标机器上接收此应用发送的 UDP 消息。
-
-## 如何接收 UDP 消息
-
-您可以在目标机器 (`10.0.90.241`) 上运行一个 UDP 监听器脚本（例如项目中的 `udp_listener.py` 或以下示例），监听端口 `9990`。
-
-**Python UDP 监听器示例 (`udp_listener.py`):**
-```python
-import socket
-import json
-
-LISTEN_IP = "0.0.0.0"  # 监听所有可用的网络接口
-LISTEN_PORT = 9990     # 必须与 OpenHarmony 应用中的 TARGET_UDP_PORT 匹配
-BUFFER_SIZE = 1024
-
-def start_udp_server():
-    # 创建 UDP socket
-    udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        # 绑定 IP 地址和端口
-        udp_server_socket.bind((LISTEN_IP, LISTEN_PORT))
-        print(f"UDP 服务器正在监听 {LISTEN_IP}:{LISTEN_PORT}...")
-        while True:
-            # 接收数据
-            data, addr = udp_server_socket.recvfrom(BUFFER_SIZE)
-            message = data.decode('utf-8')
-            print(f"从 {addr[0]}:{addr[1]} 收到消息:")
-            try:
-                # 尝试解析为JSON并格式化打印
-                device_info = json.loads(message)
-                print(json.dumps(device_info, indent=2, ensure_ascii=False))
-            except json.JSONDecodeError:
-                # 如果不是JSON，则按原样打印
-                print(f"  Raw: {message}")
-            print("-" * 30)
-    except Exception as e:
-        print(f"发生错误: {e}")
-    finally:
-        # 关闭 socket
-        udp_server_socket.close()
-        print("服务器已关闭。")
-
-if __name__ == "__main__":
-    start_udp_server()
 ```
-在 IP 地址为 `10.0.90.241` 的机器上运行此 Python 脚本。
+OpenHarmony 设备          网络          监控服务器
+┌─────────────────┐      UDP       ┌─────────────────┐
+│  设备监控应用    │ <-----------> │  Python 服务器   │
+│  - CPU 温度      │      :9990    │  - 数据接收      │
+│  - IP 地址       │               │  - 设备管理      │
+│  - 状态信息      │               │  - 系统监控      │
+└─────────────────┘               └─────────────────┘
+```
+
+## 主要功能
+
+### OpenHarmony 应用端
+- ✅ **设备信息采集**
+  - 实时 CPU 温度监控
+  - 动态 IP 地址获取
+  - 系统文件读取功能
+- ✅ **UDP 通信**
+  - 定期发送设备状态（每5秒）
+  - 支持自定义目标服务器
+  - 数据完整性校验
+- ✅ **用户界面**
+  - 服务启动/停止控制
+  - 实时日志显示
+  - 状态指示器
+
+### Python 服务器端
+- ✅ **网络监控**
+  - UDP 数据包接收
+  - 广播消息处理
+  - 多设备管理
+- ✅ **系统管理**
+  - 远程命令执行
+  - 网络配置管理
+  - 服务状态监控
+- ✅ **数据处理**
+  - JSON 数据解析
+  - 校验和验证
+  - 错误处理机制
+
+## 项目结构
+
+```
+OpenHarmony_Test_APP/
+├── README.md                    # 项目说明文档
+├── build-profile.json5          # 构建配置
+├── oh-package.json5             # 包依赖配置
+├── 
+├── entry/                       # 应用主模块
+│   ├── src/main/ets/pages/
+│   │   └── Index.ets            # 主界面和核心逻辑
+│   ├── src/main/module.json5    # 模块配置
+│   └── build-profile.json5     # 模块构建配置
+├── 
+├── monitor_run.py               # Python 监控服务器
+├── udp_listener.py              # UDP 监听工具
+└── AppScope/                    # 应用全局配置
+    ├── app.json5
+    └── resources/
+```
+
+## 快速开始
+
+### 1. OpenHarmony 应用部署
+
+#### 环境要求
+- OpenHarmony SDK 3.2+
+- DevEco Studio 4.0+
+- 目标设备：OpenHarmony 系统
+
+#### 安装步骤
+```bash
+# 1. 克隆项目
+git clone <repository-url>
+cd OpenHarmony_Test_APP
+
+# 2. 在 DevEco Studio 中打开项目
+# 3. 配置目标 IP 地址（在 Index.ets 中）
+TARGET_UDP_IP: "YOUR_SERVER_IP"
+TARGET_UDP_PORT: 9990
+
+# 4. 编译并部署到设备
+```
+
+### 2. Python 监控服务器部署
+
+#### 环境要求
+```bash
+# Python 3.8+
+pip install psutil netifaces PyYAML
+```
+
+#### 启动服务器
+```bash
+# 启动完整监控服务
+python monitor_run.py
+
+# 启动 UDP 监听器
+python udp_listener.py
+```
+
+## 配置说明
+
+### 网络配置
+```typescript
+// OpenHarmony 应用配置 (Index.ets)
+const TARGET_UDP_IP: string = "10.0.90.241";    // 服务器 IP
+const TARGET_UDP_PORT: number = 9990;           // 服务器端口
+const LOCAL_UDP_PORT: number = 9991;            // 本地端口
+```
+
+```python
+# Python 服务器配置
+LISTEN_IP = "0.0.0.0"      # 监听所有接口
+LISTEN_PORT = 9990         # 监听端口
+BUFFER_SIZE = 4096         # 缓冲区大小
+```
+
+### 数据格式
+```json
+{
+  "ipAddress": "10.0.90.100",
+  "cpuTemperature": "45.2",
+  "timestamp": "2025-06-16T14:30:15",
+  "deviceType": "OpenHarmony"
+}
+```
+
+## API 文档
+
+### 核心函数
+
+#### OpenHarmony 端
+```typescript
+// 读取系统文件
+async function readSystemFileContent(filePath: string): Promise<string>
+
+// 更新设备信息
+async function updateCpuTempGlobal(): Promise<void>
+async function updateLocalIpGlobal(): Promise<void>
+
+// UDP 通信
+async function sendDeviceInfoViaUDP(): Promise<void>
+```
+
+#### Python 端
+```python
+# 数据包处理
+def build_udp_packet(udp_msg: str) -> bytes
+def unpack_udp_packet(udp_packet: bytes) -> str
+
+# 网络管理
+async def configure_network(interface: str, ip: str, gateway: str) -> bool
+def send_udp_broadcast(info_dict: dict) -> str
+
+# 系统监控
+def read_tmp() -> str
+def get_uptime_days() -> int
+```
+
+## 使用示例
+
+### 启动设备监控
+```typescript
+// OpenHarmony 应用中
+await this.startMonitorService();
+// 自动开始每5秒发送设备信息
+```
+
+### 服务器接收数据
+```python
+# Python 服务器
+import asyncio
+from monitor_run import monitor_device
+
+async def main():
+    await monitor_device()
+
+asyncio.run(main())
+```
+
+### UDP 广播通信
+```python
+# 发送设备发现广播
+device_info = {
+    'type': 'device_discovery',
+    'ip': '10.0.90.241',
+    'hostname': 'openharmony-device'
+}
+response = send_udp_broadcast(device_info)
+```
+
+## 故障排除
+
+### 常见问题
+
+#### 1. UDP 通信失败
+```bash
+# 检查防火墙设置
+sudo ufw allow 9990/udp
+
+# 检查网络连通性
+ping 10.0.90.241
+
+# 验证端口监听
+netstat -ulnp | grep 9990
+```
+
+#### 2. 设备信息获取失败
+```typescript
+// 检查文件权限
+// /sys/class/thermal/thermal_zone0/temp
+// 确保应用有读取权限
+```
+
+#### 3. Python 依赖问题
+```bash
+# 安装缺失的包
+pip install psutil netifaces PyYAML
+
+# 处理 netifaces 编译问题（Windows）
+# 下载预编译版本或安装 Visual C++ Build Tools
+```
+
+## 性能优化
+
+### OpenHarmony 端
+- 使用定时器控制发送频率
+- 实现错误重试机制
+- 优化内存使用
+
+### Python 端
+- 异步处理多设备连接
+- 数据缓存机制
+- 连接池管理
+
+## 安全注意事项
+
+1. **网络安全**
+   - 使用 HTTPS 进行敏感配置
+   - 验证数据包来源
+   - 限制广播频率
+
+2. **权限控制**
+   - 最小权限原则
+   - 文件访问控制
+   - 网络访问限制
+
+## 开发指南
+
+### 扩展功能
+1. 添加新的监控指标
+2. 实现数据持久化
+3. 支持多种通信协议
+4. 添加 Web 管理界面
+
+### 代码贡献
+1. Fork 项目
+2. 创建功能分支
+3. 提交 Pull Request
+4. 代码审查
+
+## 许可证
+
+本项目采用 MIT 许可证。详情请参见 LICENSE 文件。
+
+## 技术支持
+
+- 📧 Email: support@example.com
+- 📋 Issues: GitHub Issues
+- 📖 Wiki: 项目 Wiki 页面
+
+## 更新日志
+
+### v1.0.0 (2025-06-16)
+- ✅ 初始版本发布
+- ✅ 基础 UDP 通信功能
+- ✅ 设备信息监控
+- ✅ Python 服务器支持
