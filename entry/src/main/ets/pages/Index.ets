@@ -9,6 +9,7 @@ import fs from '@ohos.file.fs';
 interface DeviceInfo {
   ipAddress: string;
   cpuTemperature: string;
+  sn: string;
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -26,6 +27,7 @@ const LOCAL_UDP_PORT: number = 9991; // <-- 新增：定义本地UDP绑定的端
 // --- END: Added for UDP Sending ---
 
 let cpuTemp: string = 'Loading...';
+let sn: string = 'Loading...';
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -49,6 +51,8 @@ async function readSystemFileContent(filePath: string): Promise<string> {
     }
   }
 }
+
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': None, 'upTime': 0.0, 'time': 1750054077.0829277, 'sn': None, 'cpuTemp': None, 'agentVersion': '0.0.3'}
 
 async function fetchCpuTemperature(): Promise<string> {
   const thermalFilePath = '/sys/class/thermal/thermal_zone0/temp';
@@ -90,6 +94,20 @@ async function updateLocalIpGlobal(): Promise<void> {
 }
 // --- END: New function to update local IP ---
 
+async function fetchSN(): Promise<string> {
+  const snFilePath = '/proc/device-tree/serial-number';
+  return await readSystemFileContent(snFilePath);
+}
+
+async function updateGlobalSn(): Promise<void> {
+  try {
+    sn = await fetchSN();
+    hilog.info(DOMAIN, TAG, `Global SN updated: ${sn}`);
+  } catch (error) {
+    sn = 'ErrorFetchingSN'; // 或者其他错误指示字符串
+    hilog.error(DOMAIN, TAG, `Failed to update global SN: ${JSON.stringify(error)}`);
+  }
+}
 
 // --- BEGIN: New function to send device info via UDP ---
 async function sendDeviceInfoViaUDP(): Promise<void> {
@@ -100,7 +118,8 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     // 2. 准备要发送的数据
     const deviceInfo: DeviceInfo = { // 使用定义的接口
       ipAddress: localIp,
-      cpuTemperature: cpuTemp
+      cpuTemperature: cpuTemp,
+      sn: sn 
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -126,12 +145,30 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     // 如果是全局函数，则不能直接使用 this.addLog
   }
 }
+
+
+
+
+
 // --- END: New function to send device info via UDP ---
 
 (async () => {
   await updateCpuTempGlobal();
   await updateLocalIpGlobal();
+  await updateGlobalSn();
 })();
+
+
+
+
+
+
+
+
+
+
+
+
 
 @Entry
 @Component
@@ -216,7 +253,7 @@ struct Index {
       this.addLog(startMsg);
       await updateLocalIpGlobal(); // 确保在启动服务前获取最新的本地IP
       this.addLog("本机IP为" + localIp);
-
+      this.addLog("设备SN为" + sn);
       await updateCpuTempGlobal(); // 确保在启动服务前获取最新的 CPU 温度
       this.addLog("CPU温度为" + cpuTemp + "°C");
 
