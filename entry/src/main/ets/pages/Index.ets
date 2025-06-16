@@ -10,6 +10,7 @@ interface DeviceInfo {
   ipAddress: string;
   cpuTemperature: string;
   sn: string;
+  time: string; 
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -28,6 +29,7 @@ const LOCAL_UDP_PORT: number = 9991; // <-- 新增：定义本地UDP绑定的端
 
 let cpuTemp: string = 'Loading...';
 let sn: string = 'Loading...';
+let time: string = 'Loading...';
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -52,13 +54,26 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': None, 'upTime': 0.0, 'time': 1750054077.0829277, 'sn': None, 'cpuTemp': None, 'agentVersion': '0.0.3'}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': None, 'ip': None, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '0.0.3'?}
+async function fetchSystemTime(): Promise<string> {
+  const currentTime = await systemDateTime.getCurrentTime() / 1000; // 获取当前的 Date 对象
+  return currentTime.toString();
+}
+async function updateTimeGlobal(): Promise<void> {
+  try {
+    time = await fetchSystemTime();
+    hilog.info(DOMAIN, TAG, `Global time updated: ${time}`);
+  } catch (error) {
+    time = 'ErrorFetchingTime'; // 或者其他错误指示字符串
+    hilog.error(DOMAIN, TAG, `Failed to update global time: ${JSON.stringify(error)}`);
+  }
+}
+
 
 async function fetchCpuTemperature(): Promise<string> {
   const thermalFilePath = '/sys/class/thermal/thermal_zone0/temp';
   return await readSystemFileContent(thermalFilePath);
 }
-
 async function updateCpuTempGlobal(): Promise<void> {
   const tempStr = await fetchCpuTemperature();
   if (tempStr !== 'N/A' && tempStr !== 'Loading...') {
@@ -98,7 +113,6 @@ async function fetchSN(): Promise<string> {
   const snFilePath = '/proc/device-tree/serial-number';
   return await readSystemFileContent(snFilePath);
 }
-
 async function updateGlobalSn(): Promise<void> {
   try {
     sn = await fetchSN();
@@ -115,11 +129,14 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     // 1. 确保 CPU 温度是最新的
     await updateCpuTempGlobal();
     await updateLocalIpGlobal();
+    await updateGlobalSn();
+    await updateTimeGlobal(); 
     // 2. 准备要发送的数据
     const deviceInfo: DeviceInfo = { // 使用定义的接口
       ipAddress: localIp,
       cpuTemperature: cpuTemp,
-      sn: sn 
+      sn: sn,
+      time: time // 添加时间字段 
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -156,6 +173,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateCpuTempGlobal();
   await updateLocalIpGlobal();
   await updateGlobalSn();
+  await updateTimeGlobal(); // 初始化时获取时间
 })();
 
 
@@ -256,6 +274,9 @@ struct Index {
       this.addLog("设备SN为" + sn);
       await updateCpuTempGlobal(); // 确保在启动服务前获取最新的 CPU 温度
       this.addLog("CPU温度为" + cpuTemp + "°C");
+
+      await updateTimeGlobal(); // 确保在启动服务前获取最新的时间
+      this.addLog("当前时间为" + time);
 
       if (!this.udpSocketBound) {
         try {
