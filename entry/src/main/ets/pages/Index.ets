@@ -121,6 +121,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     hilog.info(DOMAIN, TAG, `Device info sent to ${TARGET_UDP_IP}:${TARGET_UDP_PORT}: ${messageString}`);
   } catch (error) {
     hilog.error(DOMAIN, TAG, `Failed to send device info via UDP: ${JSON.stringify(error)}`);
+
     // 您可以在此处的 addLog 调用中访问 this，如果此函数是 Index 类的方法
     // 如果是全局函数，则不能直接使用 this.addLog
   }
@@ -143,7 +144,7 @@ struct Index {
   private udpSocketBound: boolean = false; // 用于跟踪全局socket是否已尝试绑定
   private sendIntervalId: number = -1;
 
-  private addLog(log: string): void {
+  public addLog(log: string): void {
     const now = new Date();
     const timestamp = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
     this.runtimeLog += `[${timestamp}] ${log}\n`;

@@ -27,6 +27,7 @@ monitor_cmd = 'bash -c export LANG="en_US";export LANGUAGE="en_US";export LC_ALL
                 'spacemit_separator;df -h;echo spacemit_separator;sleep 1;free;echo spacemit_separator;uptime;echo ' \
                 'spacemit_separator;cat /proc/net/dev;echo spacemit_separator;df -h;echo spacemit_separator;top -b -n ' \
                 '1 | head -n 30 ;echo spacemit_separator; '
+#无任何其他地方调用
 
 update_url = None
 can_use_urls = ['http://10.0.56.20:8081/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.bianbu.xyz/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.spacemit.com/resource/install_update.sh']
@@ -484,7 +485,7 @@ async def run_main():
             msg = send_udp_broadcast(monitor_info) #上游发回的响应
 
             await handle_msg_fun(msg)
-            
+
             await check_updater_service()
         except Exception as error:
             print(f"主循环中发生错误: {error}") # 使用 f-string 并提供更明确的错误信息
