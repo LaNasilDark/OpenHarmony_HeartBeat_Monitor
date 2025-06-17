@@ -78,7 +78,9 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+
+
 function parseNetDevContent(content: string, interfaceName: string): ParsedNetStats | null {
   try {
     const lines = content.split('\n');
@@ -106,7 +108,6 @@ function parseNetDevContent(content: string, interfaceName: string): ParsedNetSt
     return null;
   }
 }
-
 async function fetchNetworkInfo(interfaceName: string = "wlan0"): Promise<NetObjectType> {
   const defaultErrorNetInfo: NetObjectType = {
     netInterface: interfaceName,
@@ -164,7 +165,6 @@ async function fetchNetworkInfo(interfaceName: string = "wlan0"): Promise<NetObj
     return defaultErrorNetInfo;
   }
 }
-
 async function updateNetGlobal(interfaceName: string = "wlan0"): Promise<void> {
   try {
     const fetchedNetInfo = await fetchNetworkInfo(interfaceName);
@@ -182,7 +182,6 @@ async function updateNetGlobal(interfaceName: string = "wlan0"): Promise<void> {
     };
   }
 }
-
 
 async function fetchUptimeFromProcUptime(): Promise<string | null> {
   const filePath = "/proc/uptime";
