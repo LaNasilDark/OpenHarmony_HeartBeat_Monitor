@@ -323,6 +323,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateTimeGlobal();
     await updateMacGlobal(); 
     await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
+    await updateNetGlobal("wlan0"); // 确保在发送前获取最新的网络信息
     // 2. 准备要发送的数据
 
     
