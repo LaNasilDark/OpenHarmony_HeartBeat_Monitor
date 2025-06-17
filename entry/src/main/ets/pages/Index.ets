@@ -1,5 +1,4 @@
 import hilog from '@ohos.hilog';
-//import { SimpleMonitorManager } from '../monitorservice/SimpleMonitorManager';
 import socket from '@ohos.net.socket';
 import wifiManager from '@ohos.wifiManager';
 import systemDateTime from '@ohos.systemDateTime';
@@ -12,7 +11,20 @@ interface DeviceInfo {
   sn: string;
   time: string;
   mac: string;
-  upTime: string;  
+  upTime: string;
+  net: NetObjectType;   
+}
+interface NetObjectType {
+  netInterface: string;
+  txByte: string;
+  txRate: string;
+  rxByte: string;
+  rxRate: string;
+  unit: string; // 可选属性 
+}
+interface ParsedNetStats {
+  rxBytes: number;
+  txBytes: number;
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -34,6 +46,14 @@ let sn: string = 'Loading...';
 let time: string = 'Loading...';
 let mac: string = 'Loading...';
 let upTime: string = 'Loading...';
+let net: NetObjectType = {
+  netInterface: 'Loading...',
+  txByte: 'Loading...',
+  txRate: 'Loading...',
+  rxByte: 'Loading...',
+  rxRate: 'Loading...',
+  unit: 'Bytes/s'
+};
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -58,7 +78,112 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+function parseNetDevContent(content: string, interfaceName: string): ParsedNetStats | null {
+  try {
+    const lines = content.split('\n');
+    // Skip the first two header lines
+    for (let i = 2; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith(interfaceName + ':')) {
+        // Line format: Interface: RcvBytes Pkts Errs Drop Fifo Frame Compr Multicast | TransBytes Pkts Errs Drop Fifo Colls Carrier Compr
+        // Example: wlan0: 109441483    3689    0    0    0     0          0         0   803350     109    0   72    0     0       0          0
+        const parts = line.substring(line.indexOf(':') + 1).trim().split(/\s+/);
+        if (parts.length >= 10) { // Need at least up to Transmit_bytes
+          const rxBytes = parseInt(parts[0], 10); // Receive bytes
+          const txBytes = parseInt(parts[8], 10); // Transmit bytes
+
+          if (!isNaN(rxBytes) && !isNaN(txBytes)) {
+            return { rxBytes, txBytes };
+          }
+        }
+      }
+    }
+    hilog.warn(DOMAIN, TAG, `Interface ${interfaceName} not found or malformed in /proc/net/dev content.`);
+    return null;
+  } catch (e) {
+    hilog.error(DOMAIN, TAG, `Error parsing /proc/net/dev content: ${JSON.stringify(e)}`);
+    return null;
+  }
+}
+
+async function fetchNetworkInfo(interfaceName: string = "wlan0"): Promise<NetObjectType> {
+  const defaultErrorNetInfo: NetObjectType = {
+    netInterface: interfaceName,
+    txByte: 'N/A',
+    txRate: 'N/A',
+    rxByte: 'N/A',
+    rxRate: 'N/A',
+    unit: 'Bytes/s'
+  };
+
+  try {
+    const stats1Content = await readSystemFileContent('/proc/net/dev');
+    if (stats1Content === 'N/A') {
+      hilog.error(DOMAIN, TAG, "fetchNetworkInfo: Failed to read /proc/net/dev (1st attempt)");
+      return defaultErrorNetInfo;
+    }
+    const initialStats = parseNetDevContent(stats1Content, interfaceName);
+    if (!initialStats) {
+      hilog.error(DOMAIN, TAG, `fetchNetworkInfo: Failed to parse initial stats for ${interfaceName}`);
+      return defaultErrorNetInfo;
+    }
+
+    // Wait for 1 second
+    await new Promise<void>(resolve => setTimeout(resolve, 1000));
+
+    const stats2Content = await readSystemFileContent('/proc/net/dev');
+    if (stats2Content === 'N/A') {
+      hilog.error(DOMAIN, TAG, "fetchNetworkInfo: Failed to read /proc/net/dev (2nd attempt)");
+      return defaultErrorNetInfo;
+    }
+    const finalStats = parseNetDevContent(stats2Content, interfaceName);
+    if (!finalStats) {
+      hilog.error(DOMAIN, TAG, `fetchNetworkInfo: Failed to parse final stats for ${interfaceName}`);
+      return defaultErrorNetInfo;
+    }
+
+    // Calculate deltas (rates are per second due to 1s interval)
+    const deltaRxBytes = finalStats.rxBytes - initialStats.rxBytes;
+    const deltaTxBytes = finalStats.txBytes - initialStats.txBytes;
+
+    // Ensure rates are not negative (can happen if counters reset or very small fluctuations)
+    const rxRate = Math.max(0, deltaRxBytes);
+    const txRate = Math.max(0, deltaTxBytes);
+
+    return {
+      netInterface: interfaceName,
+      rxByte: finalStats.rxBytes.toString(), // Total received bytes at the end of interval
+      txByte: finalStats.txBytes.toString(), // Total transmitted bytes at the end of interval
+      rxRate: rxRate.toString(),
+      txRate: txRate.toString(),
+      unit: 'Bytes/s'
+    };
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Exception in fetchNetworkInfo: ${JSON.stringify(error)}`);
+    return defaultErrorNetInfo;
+  }
+}
+
+async function updateNetGlobal(interfaceName: string = "wlan0"): Promise<void> {
+  try {
+    const fetchedNetInfo = await fetchNetworkInfo(interfaceName);
+    net = fetchedNetInfo; // Update the global net variable
+    hilog.info(DOMAIN, TAG, `Global net info updated for ${interfaceName}: RxRate=${net.rxRate} B/s, TxRate=${net.txRate} B/s`);
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed to update global net info: ${JSON.stringify(error)}`);
+    net = { // Reset to error state
+      netInterface: interfaceName,
+      txByte: 'Error',
+      txRate: 'Error',
+      rxByte: 'Error',
+      rxRate: 'Error',
+      unit: 'Bytes/s'
+    };
+  }
+}
+
+
 async function fetchUptimeFromProcUptime(): Promise<string | null> {
   const filePath = "/proc/uptime";
   try {
@@ -67,7 +192,6 @@ async function fetchUptimeFromProcUptime(): Promise<string | null> {
       hilog.error(DOMAIN, TAG, "Failed to read /proc/uptime or content is empty.");
       return null;
     }
-
     // /proc/uptime 的内容通常是两个数字，例如 "350735.47 234388.95"
     // 我们只需要第一个数字，即系统总运行时间（秒）
     const parts = content.split(/\s+/);
@@ -76,7 +200,7 @@ async function fetchUptimeFromProcUptime(): Promise<string | null> {
       if (!isNaN(uptimeSeconds)) {
         hilog.info(DOMAIN, TAG, `Successfully fetched uptime: ${uptimeSeconds.toFixed(0)} seconds`);
         let upTimeDays = uptimeSeconds / 86400; // 计算天数
-        return upTimeDays.toFixed(2); // 返回整数秒的字符串
+        return upTimeDays.toFixed(2); 
       } else {
         hilog.error(DOMAIN, TAG, `Failed to parse uptime value from /proc/uptime: ${parts[0]}`);
         return null;
@@ -200,13 +324,17 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateMacGlobal(); 
     await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
     // 2. 准备要发送的数据
+
+    
+
     const deviceInfo: DeviceInfo = { // 使用定义的接口
       ipAddress: localIp,
       cpuTemperature: cpuTemp,
       sn: sn,
       time: time,
       mac: mac, // 新增 MAC 地址字段
-      upTime: upTime // 新增运行时间字段
+      upTime: upTime, // 新增运行时间字段
+      net: net 
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -226,10 +354,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     });
     hilog.info(DOMAIN, TAG, `Device info sent to ${TARGET_UDP_IP}:${TARGET_UDP_PORT}: ${messageString}`);
   } catch (error) {
-    hilog.error(DOMAIN, TAG, `Failed to send device info via UDP: ${JSON.stringify(error)}`);
-
-    // 您可以在此处的 addLog 调用中访问 this，如果此函数是 Index 类的方法
-    // 如果是全局函数，则不能直接使用 this.addLog
+    hilog.error(DOMAIN, TAG, `Failed to send device info via UDP: ${JSON.stringify(error)}`);  
   }
 }
 
@@ -246,6 +371,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateTimeGlobal();
   await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
   await updateUpTimeGlobal(); // 确保在应用启动时获取最新的运行时间
+  await updateNetGlobal("wlan0");
 })();
 
 
@@ -350,6 +476,9 @@ struct Index {
 
       await updateUpTimeGlobal(); // 确保在启动服务前获取最新的运行时间
       this.addLog("设备运行时间为" + upTime + "天");
+
+      await updateNetGlobal("wlan0"); // 确保在启动服务前获取最新的网络信息
+      this.addLog(`网络接口 ${net.netInterface} 的接收速率为 ${net.rxRate} B/s，发送速率为 ${net.txRate} B/s`);
 
       if (!this.udpSocketBound) {
         try {
