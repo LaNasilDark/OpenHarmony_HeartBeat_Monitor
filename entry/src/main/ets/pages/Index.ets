@@ -11,7 +11,8 @@ interface DeviceInfo {
   cpuTemperature: string;
   sn: string;
   time: string;
-  mac: string;  
+  mac: string;
+  upTime: string;  
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -32,6 +33,7 @@ let cpuTemp: string = 'Loading...';
 let sn: string = 'Loading...';
 let time: string = 'Loading...';
 let mac: string = 'Loading...';
+let upTime: string = 'Loading...';
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -56,7 +58,53 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': 0.0, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': '', 'txByte': 94729625, 'txRate': 0, 'rxByte': 5531100835, 'rxRate': 12128, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+async function fetchUptimeFromProcUptime(): Promise<string | null> {
+  const filePath = "/proc/uptime";
+  try {
+    const content = await readSystemFileContent(filePath);
+    if (content === 'N/A' || !content) {
+      hilog.error(DOMAIN, TAG, "Failed to read /proc/uptime or content is empty.");
+      return null;
+    }
+
+    // /proc/uptime 的内容通常是两个数字，例如 "350735.47 234388.95"
+    // 我们只需要第一个数字，即系统总运行时间（秒）
+    const parts = content.split(/\s+/);
+    if (parts.length >= 1) {
+      const uptimeSeconds = parseFloat(parts[0]);
+      if (!isNaN(uptimeSeconds)) {
+        hilog.info(DOMAIN, TAG, `Successfully fetched uptime: ${uptimeSeconds.toFixed(0)} seconds`);
+        let upTimeDays = uptimeSeconds / 86400; // 计算天数
+        return upTimeDays.toFixed(2); // 返回整数秒的字符串
+      } else {
+        hilog.error(DOMAIN, TAG, `Failed to parse uptime value from /proc/uptime: ${parts[0]}`);
+        return null;
+      }
+    }
+    hilog.warn(DOMAIN, TAG, "Could not parse uptime from /proc/uptime content: " + content);
+    return null;
+  } catch (e) {
+    hilog.error(DOMAIN, TAG, `Exception in fetchUptimeFromProcUptime: ${JSON.stringify(e)}`);
+    return null;
+  }
+}
+async function updateUpTimeGlobal(): Promise<void> {
+  try {
+    const fetchedUptime = await fetchUptimeFromProcUptime(); // 调用新的函数
+    if (fetchedUptime !== null) {
+      upTime = fetchedUptime;
+      hilog.info(DOMAIN, TAG, `Global uptime updated: ${upTime} days`);
+    } else {
+      upTime = 'ErrorFetchingUptime'; // 或者其他错误指示字符串
+      hilog.error(DOMAIN, TAG, 'Failed to fetch uptime from /proc/uptime');
+    }
+  } catch (error) {
+    upTime = 'ErrorFetchingUptime'; // 或者其他错误指示字符串
+    hilog.error(DOMAIN, TAG, `Failed to update global uptime: ${JSON.stringify(error)}`);
+  }
+}
+
 async function fetchMacAddress(): Promise<string> {
   const macFilePath = '/sys/class/net/wlan0/address'; // 假设使用 wlan0 接口
   return await readSystemFileContent(macFilePath);
@@ -149,14 +197,16 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateLocalIpGlobal();
     await updateSnGlobal();
     await updateTimeGlobal();
-    await updateMacGlobal(); // 确保 MAC 地址是最新的 
+    await updateMacGlobal(); 
+    await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
     // 2. 准备要发送的数据
     const deviceInfo: DeviceInfo = { // 使用定义的接口
       ipAddress: localIp,
       cpuTemperature: cpuTemp,
       sn: sn,
       time: time,
-      mac: mac // 新增 MAC 地址字段
+      mac: mac, // 新增 MAC 地址字段
+      upTime: upTime // 新增运行时间字段
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -195,6 +245,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateSnGlobal();
   await updateTimeGlobal();
   await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
+  await updateUpTimeGlobal(); // 确保在应用启动时获取最新的运行时间
 })();
 
 
@@ -296,6 +347,9 @@ struct Index {
 
       await updateTimeGlobal(); // 确保在启动服务前获取最新的时间
       this.addLog("当前时间为" + time);
+
+      await updateUpTimeGlobal(); // 确保在启动服务前获取最新的运行时间
+      this.addLog("设备运行时间为" + upTime + "天");
 
       if (!this.udpSocketBound) {
         try {

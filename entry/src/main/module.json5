@@ -18,6 +18,14 @@
         },
       },
       {
+        name: "ohos.permission.GET_RUNNING_INFO",
+        reason: "$string:reason_running_info",
+        usedScene: {
+          abilities: ["EntryAbility"],
+          when: "inuse",
+        },
+      },
+      {
         name: "ohos.permission.GET_WIFI_INFO",
         reason: "$string:reason_wifi_info",
         usedScene: {
@@ -25,7 +33,6 @@
           when: "inuse",
         },
       },
-
 
       {
         name: "ohos.permission.GET_NETWORK_INFO",

@@ -29,7 +29,12 @@
 
     {
       "name": "reason_sys_info",
-      "value": "需要获取网络信息权限来监控网络状态"
+      "value": "需要获取系统信息权限来监控系统状态"
+    },
+    
+    {
+      "name": "reason_running_info",
+      "value": "需要获取/proc/stat信息权限来监控设备状态"
     }
     
   ]

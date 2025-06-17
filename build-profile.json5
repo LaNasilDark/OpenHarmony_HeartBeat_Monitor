@@ -6,11 +6,11 @@
         "material": {
           "certpath": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B29A802936F56A63DDDD696C5D2BA63D840597D270850A79EEDE4E598FE047FEDCB424C072D6E00",
+          "keyPassword": "0000001B3FE06C9441BCDCB66FF31A4B1E4750E1A46A2961EE7148EE8A779106BF4A97A64DEC38898FC7FA",
           "profile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p12",
-          "storePassword": "0000001B3E1ACB15CA2181C67E6E70E330242D9EA88599705411DC45F6F66C3C41FAE88745C65009FD7090"
+          "storePassword": "0000001BB62C5BABE5BA437FB4100AE591DC2A27DCA180544FDFD3F2D590AB6772EC395958C5F691183D01"
         }
       }
     ],

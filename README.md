@@ -89,7 +89,7 @@ OpenHarmony_Test_APP/
 
 ```bash
 # 1. 克隆项目
-git clone <repository-url>
+git clone https://github.com/LaNasilDark/OpenHarmony_HeartBeat_Monitor
 cd OpenHarmony_Test_APP
 
 # 2. 在 DevEco Studio 中打开项目
