@@ -4,6 +4,7 @@ import wifiManager from '@ohos.wifiManager';
 import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
 import fs from '@ohos.file.fs';
+import { statfs } from '@kit.CoreFileKit';
 
 interface DeviceInfo {
   ipAddress: string;
@@ -12,7 +13,8 @@ interface DeviceInfo {
   time: string;
   mac: string;
   upTime: string;
-  net: NetObjectType;   
+  net: NetObjectType;
+  disk: DiskObjectType; // 新增磁盘信息   
 }
 interface NetObjectType {
   netInterface: string;
@@ -21,6 +23,14 @@ interface NetObjectType {
   rxByte: string;
   rxRate: string;
   unit: string; // 可选属性 
+}
+interface DiskObjectType {
+  mounted: string;
+  available: string;
+  total: string;
+  percent: string;
+  used: string;
+  unit: string;
 }
 interface ParsedNetStats {
   rxBytes: number;
@@ -54,7 +64,14 @@ let net: NetObjectType = {
   rxRate: 'Loading...',
   unit: 'Bytes/s'
 };
-
+let disk: DiskObjectType = {
+  mounted: '/',
+  available: 'Loading...',
+  total: 'Loading...',
+  percent: 'Loading...',
+  used: 'Loading...',
+  unit: 'Byte'
+};
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
   try {
@@ -79,7 +96,61 @@ async function readSystemFileContent(filePath: string): Promise<string> {
 }
 
 // {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+async function fetchDiskInfo(mountPath: string = "/"): Promise<DiskObjectType> {
+  const defaultErrorDiskInfo: DiskObjectType = {
+    mounted: mountPath,
+    available: 'N/A',
+    total: 'N/A',
+    percent: 'N/A',
+    used: 'N/A',
+    unit: 'Byte'
+  };
 
+  try {
+    const totalBytesNum: number = await statfs.getTotalSize(mountPath);
+    const availableBytesNum: number = await statfs.getFreeSize(mountPath); // This is free bytes, which might be equivalent to available for non-superuser
+
+    // Convert to BigInt for consistent calculations, though numbers from API might be safe.
+    const totalBytes = BigInt(totalBytesNum);
+    const availableBytes = BigInt(availableBytesNum);
+
+    // Used bytes calculation
+    const usedBytes = totalBytes - availableBytes;
+
+    const percentNum = totalBytes > 0n ? Number((usedBytes * 1000n / totalBytes) / 10n) : 0;
+
+    return {
+      mounted: mountPath,
+      available: availableBytes.toString(),
+      total: totalBytes.toString(),
+      percent: percentNum.toFixed(0),
+      used: usedBytes.toString(),
+      unit: 'Byte'
+    };
+  } catch (error) {
+    // It's good practice to check the error type if BusinessError is expected
+    // import { BusinessError } from '@kit.BasicServicesKit';
+    // if (error instanceof BusinessError) { ... }
+    hilog.error(DOMAIN, TAG, `Failed to fetch disk info for ${mountPath} using @kit.CoreFileKit/statfs: ${JSON.stringify(error)}, Code: ${error.code}, Msg: ${error.message}`);
+    return defaultErrorDiskInfo;
+  }
+}
+async function updateDiskGlobal(mountPath: string = "/"): Promise<void> {
+  try {
+    disk = await fetchDiskInfo(mountPath);
+    hilog.info(DOMAIN, TAG, `Global disk info updated for ${disk.mounted}: Total=${disk.total}B, Used=${disk.used}B (${disk.percent}%)`);
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed to update global disk info: ${JSON.stringify(error)}`);
+    disk = { // Reset to error state
+      mounted: mountPath,
+      available: 'Error',
+      total: 'Error',
+      percent: 'Error',
+      used: 'Error',
+      unit: 'Byte'
+    };
+  }
+}
 
 function parseNetDevContent(content: string, interfaceName: string): ParsedNetStats | null {
   try {
@@ -323,6 +394,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateMacGlobal(); 
     await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
     await updateNetGlobal("wlan0"); // 确保在发送前获取最新的网络信息
+    await updateDiskGlobal("/");
     // 2. 准备要发送的数据
 
     
@@ -334,7 +406,8 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
       time: time,
       mac: mac, // 新增 MAC 地址字段
       upTime: upTime, // 新增运行时间字段
-      net: net 
+      net: net,
+      disk: disk // 新增磁盘信息 
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -372,6 +445,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
   await updateUpTimeGlobal(); // 确保在应用启动时获取最新的运行时间
   await updateNetGlobal("wlan0");
+  await updateDiskGlobal("/"); // 确保在应用启动时获取最新的磁盘信息
 })();
 
 
@@ -479,6 +553,9 @@ struct Index {
 
       await updateNetGlobal("wlan0"); // 确保在启动服务前获取最新的网络信息
       this.addLog(`网络接口 ${net.netInterface} 的接收速率为 ${net.rxRate} B/s，发送速率为 ${net.txRate} B/s`);
+
+      await updateDiskGlobal("/"); // <-- Added: Update and log disk info
+      this.addLog(`磁盘 ${disk.mounted} 总空间: ${disk.total} Bytes, 已用: ${disk.used} Bytes (${disk.percent}%)`);
 
       if (!this.udpSocketBound) {
         try {
