@@ -107,7 +107,51 @@ TARGET_UDP_PORT: 9990
 # 4. 编译并部署到设备
 ```
 
-### 2. Python 监控服务器部署
+### 2.修改设备启动配置文件
+
+你需要修改设备的启动配置文件以放宽对 `/proc/stat` 的访问限制。此操作需要 root 权限。
+
+a. **以读写模式重新挂载 vendor 分区**
+
+在设备的 shell 中执行以下命令：
+
+```bash
+mount -o remount,rw /vendor
+```
+
+b. 更新**配置文件**
+
+用本仓库中的 `init.musepaper.cfg` 文件替换原本的 `init.musepaper.cfg`文件：
+
+```bash
+hdc file send ./init.musepaper.cfg /vendor/etc/init.musepaper.cfg
+```
+
+其主要区别为原文件中的：
+`"chmod 0440 /proc/stat",`
+
+被其修改为：
+`"chmod 0444 /proc/stat",`
+
+c. **恢复分区为只读模式（重要）**
+
+为了系统安全，将分区重新挂载为只读：
+
+```bash
+mount -o remount,ro /vendor
+```
+
+d. **重启设备**
+
+执行重启命令使更改生效：
+
+```bash
+reboot
+```
+
+重启后，应用应该能正常读取 CPU 信息。
+
+### 3. Python 监控服务器部署
 
 #### Python 环境要求
 
@@ -295,54 +339,6 @@ pip install psutil netifaces PyYAML
 # 处理 netifaces 编译问题（Windows）
 # 下载预编译版本或安装 Visual C++ Build Tools
 ```
-
-#### 4. CPU 负载显示为 N/A 或获取失败
-
-此问题通常是由于应用没有权限读取 `/proc/stat` 文件导致的。系统启动脚本可能将该文件权限设置得过于严格。
-
-**解决方案：**
-
-你需要修改设备的启动配置文件以放宽对 `/proc/stat` 的访问限制。此操作需要 root 权限。
-
-a. **以读写模式重新挂载 vendor 分区**
-
-在设备的 shell 中执行以下命令：
-
-```bash
-mount -o remount,rw /vendor
-```
-
-b. 更新**配置文件**
-
-用本仓库中的 `init.musepaper.cfg` 文件替换原本的 `init.musepaper.cfg`文件：
-
-```bash
-hdc file send ./init.musepaper.cfg /vendor/etc/init.musepaper.cfg
-```
-
-其主要区别为原文件中的：
-`"chmod 0440 /proc/stat",`
-
-被其修改为：
-`"chmod 0444 /proc/stat",`
-
-c. **恢复分区为只读模式（重要）**
-
-为了系统安全，将分区重新挂载为只读：
-
-```bash
-mount -o remount,ro /vendor
-```
-
-d. **重启设备**
-
-执行重启命令使更改生效：
-
-```bash
-reboot
-```
-
-重启后，应用应该能正常读取 CPU 信息。
 
 ## 性能优化
 
