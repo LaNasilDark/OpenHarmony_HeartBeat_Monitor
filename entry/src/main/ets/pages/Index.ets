@@ -7,35 +7,48 @@ import fs from '@ohos.file.fs';
 import { statfs } from '@kit.CoreFileKit';
 
 interface DeviceInfo {
-  ipAddress: string;
-  cpuTemperature: string;
-  sn: string;
-  time: string;
+  cpuLoad: string; // 可选属性，CPU负载
+  memInfo: MemObjectType; // 可选属性，内存信息
+  disk: DiskObjectType;
+  net: NetObjectType; 
   mac: string;
-  upTime: string;
-  net: NetObjectType;
-  disk: DiskObjectType; // 新增磁盘信息
-  cpuLoad: string; // 可选属性，CPU负载   
+  ipAddress: string;
+  upTime: string | number; // 可选属性，设备运行时间，可以是字符串或数字
+  time: string | number; // 可选属性，当前时间，可以是字符串或数字
+  sn: string;
+  cpuTemperature: string | number;
+  agentVersion: string // 可选属性，CPU温度，可以是字符串或数字 
 }
 interface NetObjectType {
   netInterface: string;
-  txByte: string;
-  txRate: string;
-  rxByte: string;
-  rxRate: string;
+  txByte: number;
+  txRate: number;
+  rxByte: number;
+  rxRate: number;
   unit: string; // 可选属性 
 }
 interface DiskObjectType {
   mounted: string;
-  available: string;
-  total: string;
-  percent: string;
-  used: string;
+  available: number;
+  total: number;
+  percent: number;
+  used: number;
   unit: string;
+}
+interface MemObjectType {
+  memTotal: number;
+  memLoad: number;
+  memUsed: number;
+  memAvailable: number;
+  unit: string; // 可选属性
 }
 interface ParsedNetStats {
   rxBytes: number;
   txBytes: number;
+}
+interface MemInfoParsed {
+  memTotal: number;
+  memAvailable: number;
 }
 interface CpuStat {
   idle: number;
@@ -62,22 +75,29 @@ let time: string = 'Loading...';
 let mac: string = 'Loading...';
 let upTime: string = 'Loading...';
 let net: NetObjectType = {
-  netInterface: 'Loading...',
-  txByte: 'Loading...',
-  txRate: 'Loading...',
-  rxByte: 'Loading...',
-  rxRate: 'Loading...',
+  netInterface: '0',
+  txByte: -1,
+  txRate: -1,
+  rxByte: -1,
+  rxRate: -1,
   unit: 'Bytes/s'
 };
 let disk: DiskObjectType = {
   mounted: '/',
-  available: 'Loading...',
-  total: 'Loading...',
-  percent: 'Loading...',
-  used: 'Loading...',
+  available: -1,
+  total: -1,
+  percent: -1,
+  used: -1,
   unit: 'Byte'
 };
 let cpuLoad: string = 'Loading...';
+let mem: MemObjectType = {
+  memTotal: -1,
+  memLoad: -1,
+  memUsed: -1,
+  memAvailable: -1,
+  unit: 'Byte'
+};
 
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
@@ -102,7 +122,85 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': bug:13900012, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': 'bug', 'available': bug, 'total': bug, 'percent': bug, 'used': bug, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+// {'cpuLoad': bug:13900012, 'memInfo': {'memTotal': Done, 'memLoad': Done, 'memUsed': Done, 'memAvailable': Done, 'unit': 'Done'}, 'disk': {'mounted': 'bug', 'available': bug, 'total': bug, 'percent': bug, 'used': bug, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+function parseMemInfo(content: string): MemInfoParsed { // FIX: 使用已定义的接口 MemInfoParsed 作为返回类型
+  const lines = content.split('\n');
+  let memTotal = 0;
+  let memAvailable = 0;
+
+  for (const line of lines) {
+    const parts = line.split(/\s+/);
+    if (parts.length >= 2) {
+      const value = parseInt(parts[1], 10);
+      if (!isNaN(value)) {
+        if (line.startsWith('MemTotal:')) {
+          memTotal = value * 1024; // kB to Bytes
+        } else if (line.startsWith('MemAvailable:')) {
+          memAvailable = value * 1024; // kB to Bytes
+        }
+      }
+    }
+  }
+  return { memTotal, memAvailable };
+}
+
+async function fetchMemInfo(): Promise<MemObjectType> {
+  const defaultErrorMemInfo: MemObjectType = {
+    memTotal: 0,
+    memLoad: 0,
+    memUsed: 0,
+    memAvailable: 0,
+    unit: 'Byte'
+  };
+
+  try {
+    const content = await readSystemFileContent('/proc/meminfo');
+    if (content === 'N/A') {
+      hilog.error(DOMAIN, TAG, "Failed to read /proc/meminfo.");
+      return defaultErrorMemInfo;
+    }
+
+    const parsedInfo = parseMemInfo(content);
+    const memTotal = parsedInfo.memTotal;
+    const memAvailable = parsedInfo.memAvailable;
+
+    if (memTotal > 0) {
+      const memUsed = memTotal - memAvailable;
+      const memLoad = (memUsed / memTotal) * 100;
+
+      return {
+        memTotal: memTotal,
+        memLoad: parseFloat(memLoad.toFixed(1)),
+        memUsed: memUsed,
+        memAvailable: memAvailable,
+        unit: 'Byte'
+      };
+    }
+    hilog.warn(DOMAIN, TAG, "Parsed MemTotal is 0.");
+    return defaultErrorMemInfo;
+
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed to fetch mem info: ${JSON.stringify(error)}`);
+    return defaultErrorMemInfo;
+  }
+}
+
+async function updateMemGlobal(): Promise<void> {
+  try {
+    mem = await fetchMemInfo();
+    hilog.info(DOMAIN, TAG, `Global mem info updated: Load=${mem.memLoad}%, Total=${mem.memTotal}B`);
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed to update global mem info: ${JSON.stringify(error)}`);
+    mem = { // Reset to error state
+      memTotal: -1,
+      memLoad: -1,
+      memUsed: -1,
+      memAvailable: -1,
+      unit: 'Byte'
+    };
+  }
+}
+
 function parseCpuStat(stat: string): CpuStat {
   const lines = stat.split('\n');
   const cpuLine = lines[0];
@@ -143,10 +241,10 @@ async function updateCpuPercentGlobal(): Promise<void> {
 async function fetchDiskInfo(mountPath: string = "/data"): Promise<DiskObjectType> {
   const defaultErrorDiskInfo: DiskObjectType = {
     mounted: mountPath,
-    available: 'N/A',
-    total: 'N/A',
-    percent: 'N/A',
-    used: 'N/A',
+    available: -1,
+    total: -1,
+    percent: -1,
+    used: -1,
     unit: 'Byte'
   };
 
@@ -155,21 +253,21 @@ async function fetchDiskInfo(mountPath: string = "/data"): Promise<DiskObjectTyp
     const availableBytesNum: number = await statfs.getFreeSize(mountPath); // This is free bytes, which might be equivalent to available for non-superuser
 
     // Convert to BigInt for consistent calculations, though numbers from API might be safe.
-    const totalBytes = BigInt(totalBytesNum);
-    const availableBytes = BigInt(availableBytesNum);
+    const totalBytes = (totalBytesNum);
+    const availableBytes = (availableBytesNum);
     hilog.info(DOMAIN, TAG, `Disk info for ${mountPath}: Total=${totalBytes}B, Available=${availableBytes}B`);
 
     // Used bytes calculation
     const usedBytes = totalBytes - availableBytes;
 
-    const percentNum = totalBytes > 0n ? Number((usedBytes * 1000n / totalBytes) / 10n) : 0;
+    const percentNum = usedBytes > 0 && totalBytes > 0 ? (usedBytes / totalBytes) * 100 : 0;
 
     return {
       mounted: mountPath,
-      available: availableBytes.toString(),
-      total: totalBytes.toString(),
-      percent: percentNum.toFixed(0),
-      used: usedBytes.toString(),
+      available: availableBytes,
+      total: totalBytes,
+      percent: percentNum,
+      used: usedBytes,
       unit: 'Byte'
     };
   } catch (error) {
@@ -188,10 +286,10 @@ async function updateDiskGlobal(mountPath: string = "/data"): Promise<void> {
     hilog.error(DOMAIN, TAG, `Failed to update global disk info: ${JSON.stringify(error)}`);
     disk = { // Reset to error state
       mounted: mountPath,
-      available: 'Error',
-      total: 'Error',
-      percent: 'Error',
-      used: 'Error',
+      available: -1,
+      total: -1,
+      percent: -1,
+      used: -1,
       unit: 'Byte'
     };
   }
@@ -227,10 +325,10 @@ function parseNetDevContent(content: string, interfaceName: string): ParsedNetSt
 async function fetchNetworkInfo(interfaceName: string = "wlan0"): Promise<NetObjectType> {
   const defaultErrorNetInfo: NetObjectType = {
     netInterface: interfaceName,
-    txByte: 'N/A',
-    txRate: 'N/A',
-    rxByte: 'N/A',
-    rxRate: 'N/A',
+    txByte: -1,
+    txRate: -1,
+    rxByte: -1,
+    rxRate: -1,
     unit: 'Bytes/s'
   };
 
@@ -270,10 +368,10 @@ async function fetchNetworkInfo(interfaceName: string = "wlan0"): Promise<NetObj
 
     return {
       netInterface: interfaceName,
-      rxByte: finalStats.rxBytes.toString(), // Total received bytes at the end of interval
-      txByte: finalStats.txBytes.toString(), // Total transmitted bytes at the end of interval
-      rxRate: rxRate.toString(),
-      txRate: txRate.toString(),
+      rxByte: finalStats.rxBytes, // Total received bytes at the end of interval
+      txByte: finalStats.txBytes, // Total transmitted bytes at the end of interval
+      rxRate: rxRate,
+      txRate: txRate,
       unit: 'Bytes/s'
     };
   } catch (error) {
@@ -290,10 +388,10 @@ async function updateNetGlobal(interfaceName: string = "wlan0"): Promise<void> {
     hilog.error(DOMAIN, TAG, `Failed to update global net info: ${JSON.stringify(error)}`);
     net = { // Reset to error state
       netInterface: interfaceName,
-      txByte: 'Error',
-      txRate: 'Error',
-      rxByte: 'Error',
-      rxRate: 'Error',
+      txByte: -1,
+      txRate: -1,
+      rxByte: -1,
+      rxRate: -1,
       unit: 'Bytes/s'
     };
   }
@@ -441,20 +539,31 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateNetGlobal("wlan0"); // 确保在发送前获取最新的网络信息
     await updateDiskGlobal("/data");
     await updateCpuPercentGlobal(); // 更新 CPU 使用率
+    await updateMemGlobal(); // 更新内存信息
     // 2. 准备要发送的数据
 
-    
+    let agentVersion: string = '1.14514'; // 假设这是您的应用版本号
 
     const deviceInfo: DeviceInfo = { // 使用定义的接口
-      ipAddress: localIp,
-      cpuTemperature: cpuTemp,
-      sn: sn,
-      time: time,
-      mac: mac, // 新增 MAC 地址字段
-      upTime: upTime, // 新增运行时间字段
+      cpuLoad: cpuLoad, // 新增 CPU 负载字段
+      memInfo: mem, // 新增内存信息
+      disk: disk,
       net: net,
-      disk: disk, // 新增磁盘信息
-      cpuLoad: cpuLoad // 新增 CPU 负载字段 
+      mac: mac, // 新增 MAC 地址字段
+      ipAddress: localIp,
+      upTime: Number(upTime),
+      time: Number(time),
+      sn: sn,
+      cpuTemperature: Number(cpuTemp),
+      agentVersion: agentVersion // 新增应用版本字段
+      
+      
+      
+       // 新增运行时间字段
+      
+       // 新增磁盘信息
+       
+      
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -494,6 +603,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateNetGlobal("wlan0");
   await updateDiskGlobal("/data"); // 确保在应用启动时获取最新的磁盘信息
   await updateCpuPercentGlobal(); // 更新 CPU 使用率
+  await updateMemGlobal(); // 更新内存信息
 })();
 
 
@@ -607,6 +717,9 @@ struct Index {
 
       await updateCpuPercentGlobal(); // 更新 CPU 使用率
       this.addLog(`CPU 使用率为 ${cpuLoad}%`);
+
+      await updateMemGlobal(); // 更新内存信息
+      this.addLog(`内存使用率: ${mem.memLoad}%, 总量: ${mem.memTotal} Bytes, 已用: ${mem.memUsed} Bytes`);
 
       if (!this.udpSocketBound) {
         try {
