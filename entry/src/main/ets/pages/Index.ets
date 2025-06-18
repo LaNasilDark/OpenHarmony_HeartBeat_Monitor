@@ -526,6 +526,31 @@ async function updateSnGlobal(): Promise<void> {
   }
 }
 
+function calculateChecksum(data: Uint8Array): number {
+  let sum = 0;
+  const len = data.length;
+  const n = len % 2;
+
+  // Sum up 16-bit words
+  for (let i = 0; i < len - n; i += 2) {
+    // Combine two 8-bit bytes into one 16-bit word (little-endian pair)
+    sum += data[i] + (data[i + 1] << 8);
+  }
+
+  // Add the last byte if the length is odd
+  if (n) {
+    sum += data[len - 1];
+  }
+
+  // Fold 32-bit sum to 16 bits: add carrier to result
+  while (sum >> 16) {
+    sum = (sum & 0xFFFF) + (sum >> 16);
+  }
+
+  // Take the one's complement of the sum
+  return ~sum & 0xFFFF;
+}
+
 // --- BEGIN: New function to send device info via UDP ---
 async function sendDeviceInfoViaUDP(): Promise<void> {
   try {
@@ -556,18 +581,25 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
       sn: sn,
       cpuTemperature: Number(cpuTemp),
       agentVersion: agentVersion // 新增应用版本字段
-      
-      
-      
-       // 新增运行时间字段
-      
-       // 新增磁盘信息
-       
-      
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
-    const dataToSendBuffer = encoder.encode(messageString).buffer;
+    // a. 将 JSON 消息编码为字节数组
+    const messageBytes = encoder.encode(messageString);
+
+    // b. 计算校验和
+    const checksum = calculateChecksum(messageBytes);
+
+    // c. 将 16 位校验和打包成 2 字节的 Uint8Array (大端序/网络字节序)
+    const checksumBuffer = new ArrayBuffer(2);
+    const view = new DataView(checksumBuffer);
+    view.setUint16(0, checksum, false); // false for big-endian (network byte order)
+    const checksumBytes = new Uint8Array(checksumBuffer);
+
+    // d. 将校验和与消息拼接，形成最终的数据包
+    const packetBytes = new Uint8Array(checksumBytes.length + messageBytes.length);
+    packetBytes.set(checksumBytes, 0); // 附加校验和
+    packetBytes.set(messageBytes, checksumBytes.length); // 附加消息
 
     // 3. 定义远程地址信息，使用 socket.NetAddress
     const remoteAddress: socket.NetAddress = { // 改为 socket.NetAddress
@@ -578,7 +610,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
 
     // 4. 发送数据
     await udpSocket.send({
-      data: dataToSendBuffer,
+      data: packetBytes.buffer,
       address: remoteAddress // 现在类型匹配
     });
     hilog.info(DOMAIN, TAG, `Device info sent to ${TARGET_UDP_IP}:${TARGET_UDP_PORT}: ${messageString}`);
