@@ -12,7 +12,7 @@
 
 ## 系统架构
 
-```
+```text
 OpenHarmony 设备          网络          监控服务器
 ┌─────────────────┐      UDP       ┌─────────────────┐
 │  设备监控应用    │ <-----------> │  Python 服务器   │
@@ -27,13 +27,20 @@ OpenHarmony 设备          网络          监控服务器
 ### OpenHarmony 应用端
 
 - ✅ **设备信息采集**
-  - 实时 CPU 温度监控
-  - 动态 IP 地址获取
-  - 系统文件读取功能
+  - CPU 负载
+  - 内存使用情况
+  - 磁盘空间信息
+  - 网络流量统计
+  - CPU 实时温度
+  - 设备序列号 (SN)
+  - MAC 地址
+  - 动态 IP 地址
+  - 系统运行时间
+  - 系统当前时间
 - ✅ **UDP 通信**
   - 定期发送设备状态（每5秒）
   - 支持自定义目标服务器
-  - 数据完整性校验
+  - 基于 RFC 1071 的数据完整性校验和
 - ✅ **用户界面**
   - 服务启动/停止控制
   - 实时日志显示
@@ -102,7 +109,7 @@ TARGET_UDP_PORT: 9990
 
 ### 2. Python 监控服务器部署
 
-#### 环境要求
+#### Python 环境要求
 
 ```bash
 # Python 3.8+
@@ -139,12 +146,43 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 
 ### 数据格式
 
+设备信息以 JSON 格式通过 UDP 发送。数据包的前2个字节是基于消息体的校验和（大端序，unsigned short）。
+
+**JSON 示例:**
+
 ```json
 {
+  "cpuLoad": "5.7",
+  "memInfo": {
+    "memTotal": 8123456,
+    "memLoad": 65,
+    "memUsed": 5280247,
+    "memAvailable": 2843209,
+    "unit": "Byte"
+  },
+  "disk": {
+    "mounted": "/data",
+    "available": 5432109876,
+    "total": 10987654321,
+    "percent": 50,
+    "used": 5555544445,
+    "unit": "Byte"
+  },
+  "net": {
+    "netInterface": "wlan0",
+    "txByte": 123456,
+    "txRate": 1024,
+    "rxByte": 789012,
+    "rxRate": 2048,
+    "unit": "Bytes/s"
+  },
+  "mac": "00:11:22:33:44:55",
   "ipAddress": "10.0.90.100",
+  "upTime": "123456.78",
+  "time": "1718689815",
+  "sn": "1234567890ABCDEF",
   "cpuTemperature": "45.2",
-  "timestamp": "2025-06-16T14:30:15",
-  "deviceType": "OpenHarmony"
+  "agentVersion": "1.14514"
 }
 ```
 
@@ -152,21 +190,27 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 
 ### 核心函数
 
-#### OpenHarmony 端
+#### OpenHarmony API
 
 ```typescript
-// 读取系统文件
+// 数据采集
+async function fetchMemInfo(): Promise<MemObjectType>
+async function getCpuPercent(interval: number): Promise<number>
+async function fetchDiskInfo(mountPath: string): Promise<DiskObjectType>
+async function fetchNetworkInfo(interfaceName: string): Promise<NetObjectType>
+async function fetchUptimeFromProcUptime(): Promise<string | null>
+async function fetchMacAddress(): Promise<string>
+async function fetchSystemTime(): Promise<string>
+async function fetchCpuTemperature(): Promise<string>
+async function fetchSN(): Promise<string>
 async function readSystemFileContent(filePath: string): Promise<string>
-
-// 更新设备信息
-async function updateCpuTempGlobal(): Promise<void>
-async function updateLocalIpGlobal(): Promise<void>
 
 // UDP 通信
 async function sendDeviceInfoViaUDP(): Promise<void>
+function calculateChecksum(data: Uint8Array): number
 ```
 
-#### Python 端
+#### Python API
 
 ```python
 # 数据包处理
@@ -290,9 +334,15 @@ pip install psutil netifaces PyYAML
 
 ## 技术支持(真的会有吗？)
 
-- 📧 Email: 123090669@link.cuhk.edu.cn
+- 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.1.0 (2025-06-18)
+
+- ✨ **新增**：添加了丰富的设备指标监控，包括 CPU 负载、内存、磁盘、网络流量、MAC地址、SN号、系统运行时间等。
+- 📝 **更新**：更新了通信的数据结构和文档，以反映最新的功能。
+- 🐛 **修复**：优化了数据采集的稳定性和准确性。
 
 ### v1.0.0 (2025-06-16)
 
