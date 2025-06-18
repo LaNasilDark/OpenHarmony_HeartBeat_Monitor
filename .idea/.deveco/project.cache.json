@@ -9,7 +9,7 @@
 		"SELECT_BUILD_PRODUCT":"default",
 		"BUNDLE_NAME":"com.example.openharmony_test_app",
 		"BUILD_PATH":{
-			"OUTPUT_PATH":"C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\build\\outputs\\default"
+			"OUTPUT_PATH":"C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\build\\outputs\\default"
 		},
 		"SELECT_BUILD_MODE":""
 	}

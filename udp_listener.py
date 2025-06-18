@@ -76,8 +76,7 @@ def main():
                     
                     print("-" * 40)
                     print(f"[{datetime.datetime.now()}] Packet received from {addr} (Checksum OK: {received_checksum})")
-                    # 使用 json.dumps 美化输出
-                    print(json.dumps(device_info, indent=2, ensure_ascii=False))
+                    print(device_info)
                     
                 except (UnicodeDecodeError, json.JSONDecodeError) as e:
                     print(f"[{datetime.datetime.now()}] Checksum OK, but failed to decode/parse JSON from {addr}: {e}")

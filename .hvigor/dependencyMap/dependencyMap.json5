@@ -1,1 +1,1 @@
-{"basePath":"C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_Test_APP\\.hvigor\\dependencyMap\\dependencyMap.json5","rootDependency":"./oh-package.json5","dependencyMap":{"entry":"./entry/oh-package.json5"},"modules":[{"name":"entry","srcPath":"..\\..\\..\\entry"}]}
+{"basePath":"C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\.hvigor\\dependencyMap\\dependencyMap.json5","rootDependency":"./oh-package.json5","dependencyMap":{"entry":"./entry/oh-package.json5"},"modules":[{"name":"entry","srcPath":"..\\..\\..\\entry"}]}
