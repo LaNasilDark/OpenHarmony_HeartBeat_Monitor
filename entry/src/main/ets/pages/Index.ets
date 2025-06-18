@@ -14,7 +14,8 @@ interface DeviceInfo {
   mac: string;
   upTime: string;
   net: NetObjectType;
-  disk: DiskObjectType; // 新增磁盘信息   
+  disk: DiskObjectType; // 新增磁盘信息
+  cpuLoad: string; // 可选属性，CPU负载   
 }
 interface NetObjectType {
   netInterface: string;
@@ -35,6 +36,10 @@ interface DiskObjectType {
 interface ParsedNetStats {
   rxBytes: number;
   txBytes: number;
+}
+interface CpuStat {
+  idle: number;
+  total: number;
 }
 
 let udpSocket = socket.constructUDPSocketInstance();
@@ -72,6 +77,8 @@ let disk: DiskObjectType = {
   used: 'Loading...',
   unit: 'Byte'
 };
+let cpuLoad: string = 'Loading...';
+
 async function readSystemFileContent(filePath: string): Promise<string> {
   let file: fs.File | null = null;
   try {
@@ -95,8 +102,45 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': 4.1, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': '/', 'available': 160797757440, 'total': 322000908288, 'percent': 50, 'used': 161203150848, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
-async function fetchDiskInfo(mountPath: string = "/"): Promise<DiskObjectType> {
+// {'cpuLoad': bug:13900012, 'memInfo': {'memTotal': 16780967936, 'memLoad': 69.8, 'memUsed': 11710365696, 'memAvailable': 5070602240, 'unit': 'Byte'}, 'disk': {'mounted': 'bug', 'available': bug, 'total': bug, 'percent': bug, 'used': bug, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+function parseCpuStat(stat: string): CpuStat {
+  const lines = stat.split('\n');
+  const cpuLine = lines[0];
+  const parts = cpuLine.trim().split(/\s+/);
+  const nums = parts.slice(1).map(v => parseInt(v, 10));
+  const idle = nums[3] + (nums[4] || 0); // idle + iowait
+  const total = nums.reduce((a, b) => a + b, 0);
+  return { idle, total };
+}
+async function getCpuPercent(interval: number = 1000): Promise<number> {
+  const stat1 = await readSystemFileContent('/proc/stat');
+  const cpu1 = parseCpuStat(stat1);
+
+  await new Promise<void>(resolve => setTimeout(resolve, interval));
+
+  const stat2 = await readSystemFileContent('/proc/stat');
+  const cpu2 = parseCpuStat(stat2);
+
+  const idleDelta = cpu2.idle - cpu1.idle;
+  const totalDelta = cpu2.total - cpu1.total;
+
+  if (totalDelta <= 0) {
+    return 0;
+  }
+  const usage = (1 - idleDelta / totalDelta) * 100;
+  return Number(usage.toFixed(1));
+}
+async function updateCpuPercentGlobal(): Promise<void> {
+  try {
+    const cpuLoad = await getCpuPercent();
+    hilog.info(DOMAIN, TAG, `Global CPU load updated: ${cpuLoad}%`);
+    // 这里可以将 cpuLoad 存储到全局变量或状态中
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed to update global CPU load: ${JSON.stringify(error)}`);
+  }
+}
+
+async function fetchDiskInfo(mountPath: string = "/data"): Promise<DiskObjectType> {
   const defaultErrorDiskInfo: DiskObjectType = {
     mounted: mountPath,
     available: 'N/A',
@@ -113,6 +157,7 @@ async function fetchDiskInfo(mountPath: string = "/"): Promise<DiskObjectType> {
     // Convert to BigInt for consistent calculations, though numbers from API might be safe.
     const totalBytes = BigInt(totalBytesNum);
     const availableBytes = BigInt(availableBytesNum);
+    hilog.info(DOMAIN, TAG, `Disk info for ${mountPath}: Total=${totalBytes}B, Available=${availableBytes}B`);
 
     // Used bytes calculation
     const usedBytes = totalBytes - availableBytes;
@@ -135,7 +180,7 @@ async function fetchDiskInfo(mountPath: string = "/"): Promise<DiskObjectType> {
     return defaultErrorDiskInfo;
   }
 }
-async function updateDiskGlobal(mountPath: string = "/"): Promise<void> {
+async function updateDiskGlobal(mountPath: string = "/data"): Promise<void> {
   try {
     disk = await fetchDiskInfo(mountPath);
     hilog.info(DOMAIN, TAG, `Global disk info updated for ${disk.mounted}: Total=${disk.total}B, Used=${disk.used}B (${disk.percent}%)`);
@@ -394,7 +439,8 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateMacGlobal(); 
     await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
     await updateNetGlobal("wlan0"); // 确保在发送前获取最新的网络信息
-    await updateDiskGlobal("/");
+    await updateDiskGlobal("/data");
+    await updateCpuPercentGlobal(); // 更新 CPU 使用率
     // 2. 准备要发送的数据
 
     
@@ -407,7 +453,8 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
       mac: mac, // 新增 MAC 地址字段
       upTime: upTime, // 新增运行时间字段
       net: net,
-      disk: disk // 新增磁盘信息 
+      disk: disk, // 新增磁盘信息
+      cpuLoad: cpuLoad // 新增 CPU 负载字段 
     };
     const messageString = JSON.stringify(deviceInfo);
     const encoder = new util.TextEncoder();
@@ -445,7 +492,8 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateMacGlobal(); // 确保在应用启动时获取最新的 MAC 地址
   await updateUpTimeGlobal(); // 确保在应用启动时获取最新的运行时间
   await updateNetGlobal("wlan0");
-  await updateDiskGlobal("/"); // 确保在应用启动时获取最新的磁盘信息
+  await updateDiskGlobal("/data"); // 确保在应用启动时获取最新的磁盘信息
+  await updateCpuPercentGlobal(); // 更新 CPU 使用率
 })();
 
 
@@ -552,10 +600,13 @@ struct Index {
       this.addLog("设备运行时间为" + upTime + "天");
 
       await updateNetGlobal("wlan0"); // 确保在启动服务前获取最新的网络信息
-      this.addLog(`网络接口 ${net.netInterface} 的接收速率为 ${net.rxRate} B/s，发送速率为 ${net.txRate} B/s`);
+      this.addLog(`网络接口 ${net.netInterface} 的接收速率为 ${net.rxRate} B/s,发送速率为 ${net.txRate} B/s`);
 
       await updateDiskGlobal("/"); // <-- Added: Update and log disk info
       this.addLog(`磁盘 ${disk.mounted} 总空间: ${disk.total} Bytes, 已用: ${disk.used} Bytes (${disk.percent}%)`);
+
+      await updateCpuPercentGlobal(); // 更新 CPU 使用率
+      this.addLog(`CPU 使用率为 ${cpuLoad}%`);
 
       if (!this.udpSocketBound) {
         try {
