@@ -7,7 +7,7 @@ import fs from '@ohos.file.fs';
 import { statfs } from '@kit.CoreFileKit';
 
 interface DeviceInfo {
-  cpuLoad: string; // 可选属性，CPU负载
+  cpuLoad: string | number; // 可选属性，CPU负载
   memInfo: MemObjectType; // 可选属性，内存信息
   disk: DiskObjectType;
   net: NetObjectType; 
@@ -90,7 +90,7 @@ let disk: DiskObjectType = {
   used: -1,
   unit: 'Byte'
 };
-let cpuLoad: string = 'Loading...';
+let cpuLoad = 'Loading...';
 let mem: MemObjectType = {
   memTotal: -1,
   memLoad: -1,
@@ -228,13 +228,19 @@ async function getCpuPercent(interval: number = 1000): Promise<number> {
   const usage = (1 - idleDelta / totalDelta) * 100;
   return Number(usage.toFixed(1));
 }
-async function updateCpuPercentGlobal(): Promise<void> {
+async function updateCPULoadGlobal(): Promise<void> {
   try {
-    const cpuLoad = await getCpuPercent();
-    hilog.info(DOMAIN, TAG, `Global CPU load updated: ${cpuLoad}%`);
-    // 这里可以将 cpuLoad 存储到全局变量或状态中
+    const fetchedCPULoad = await getCpuPercent(); // 调用新的函数
+    if (fetchedCPULoad !== null) {
+      cpuLoad = fetchedCPULoad.toString();
+      hilog.info(DOMAIN, TAG, `Global cpuLoad updated: ${cpuLoad}`);
+    } else {
+      cpuLoad = 'ErrorFetchingCPULoad'; // 或者其他错误指示字符串
+      hilog.error(DOMAIN, TAG, 'Failed to fetch cpuLoad from /proc/stat');
+    }
   } catch (error) {
-    hilog.error(DOMAIN, TAG, `Failed to update global CPU load: ${JSON.stringify(error)}`);
+    cpuLoad = 'ErrorFetchingCPULoad'; // 或者其他错误指示字符串
+    hilog.error(DOMAIN, TAG, `Failed to update global cpuLoad: ${JSON.stringify(error)}`);
   }
 }
 
@@ -563,7 +569,7 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
     await updateUpTimeGlobal(); // 确保在发送前获取最新的运行时间
     await updateNetGlobal("wlan0"); // 确保在发送前获取最新的网络信息
     await updateDiskGlobal("/data");
-    await updateCpuPercentGlobal(); // 更新 CPU 使用率
+    await updateCPULoadGlobal(); // 更新 CPU 使用率
     await updateMemGlobal(); // 更新内存信息
     // 2. 准备要发送的数据
 
@@ -619,12 +625,6 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   }
 }
 
-
-
-
-
-// --- END: New function to send device info via UDP ---
-
 (async () => {
   await updateCpuTempGlobal();
   await updateLocalIpGlobal();
@@ -634,12 +634,9 @@ async function sendDeviceInfoViaUDP(): Promise<void> {
   await updateUpTimeGlobal(); // 确保在应用启动时获取最新的运行时间
   await updateNetGlobal("wlan0");
   await updateDiskGlobal("/data"); // 确保在应用启动时获取最新的磁盘信息
-  await updateCpuPercentGlobal(); // 更新 CPU 使用率
+  await updateCPULoadGlobal(); // 更新 CPU 使用率
   await updateMemGlobal(); // 更新内存信息
 })();
-
-
-
 
 @Entry
 @Component
@@ -747,7 +744,7 @@ struct Index {
       await updateDiskGlobal("/"); // <-- Added: Update and log disk info
       this.addLog(`磁盘 ${disk.mounted} 总空间: ${disk.total} Bytes, 已用: ${disk.used} Bytes (${disk.percent}%)`);
 
-      await updateCpuPercentGlobal(); // 更新 CPU 使用率
+      await updateCPULoadGlobal(); // 更新 CPU 使用率
       this.addLog(`CPU 使用率为 ${cpuLoad}%`);
 
       await updateMemGlobal(); // 更新内存信息
