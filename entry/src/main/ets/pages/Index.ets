@@ -17,7 +17,7 @@ interface DeviceInfo {
   time: string | number; // 可选属性，当前时间，可以是字符串或数字
   sn: string;
   cpuTemperature: string | number;
-  agentVersion: string // 可选属性，CPU温度，可以是字符串或数字 
+  agentVersion: string 
 }
 interface NetObjectType {
   netInterface: string;
@@ -122,7 +122,7 @@ async function readSystemFileContent(filePath: string): Promise<string> {
   }
 }
 
-// {'cpuLoad': bug:13900012, 'memInfo': {'memTotal': Done, 'memLoad': Done, 'memUsed': Done, 'memAvailable': Done, 'unit': 'Done'}, 'disk': {'mounted': 'bug', 'available': bug, 'total': bug, 'percent': bug, 'used': bug, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
+// {'cpuLoad': done, 'memInfo': {'memTotal': Done, 'memLoad': Done, 'memUsed': Done, 'memAvailable': Done, 'unit': 'Done'}, 'disk': {'mounted': 'bug', 'available': bug, 'total': bug, 'percent': bug, 'used': bug, 'unit': 'Byte'}, 'net': {'netInterface': 'Done', 'txByte': Done, 'txRate': Done, 'rxByte': Done, 'rxRate': Done, 'unit': 'Bytes/s'}, 'mac': Done, 'ip': Done, 'upTime': Done, 'time': Done, 'sn': Done, 'cpuTemp': Done, 'agentVersion': '1.14514'}
 function parseMemInfo(content: string): MemInfoParsed { // FIX: 使用已定义的接口 MemInfoParsed 作为返回类型
   const lines = content.split('\n');
   let memTotal = 0;
@@ -143,7 +143,6 @@ function parseMemInfo(content: string): MemInfoParsed { // FIX: 使用已定义�
   }
   return { memTotal, memAvailable };
 }
-
 async function fetchMemInfo(): Promise<MemObjectType> {
   const defaultErrorMemInfo: MemObjectType = {
     memTotal: 0,
@@ -184,7 +183,6 @@ async function fetchMemInfo(): Promise<MemObjectType> {
     return defaultErrorMemInfo;
   }
 }
-
 async function updateMemGlobal(): Promise<void> {
   try {
     mem = await fetchMemInfo();

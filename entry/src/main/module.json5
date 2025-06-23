@@ -42,6 +42,14 @@
           when: "inuse",
         },
       },
+      {
+        name: "ohos.permission.MANAGE_APP_BOOT",
+        reason: "$string:reason_boot_start",
+        usedScene: {
+          abilities: ["EntryAbility"],
+          when: "always",
+        },
+      },
     ],
     abilities: [
       {

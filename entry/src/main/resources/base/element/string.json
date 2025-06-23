@@ -33,6 +33,11 @@
     },
     
     {
+      "name": "reason_boot_start",
+      "value": "需要开机自启动权限来确保应用在设备启动时自动运行"
+    },
+
+    {
       "name": "reason_running_info",
       "value": "需要获取/proc/stat信息权限来监控设备状态"
     }

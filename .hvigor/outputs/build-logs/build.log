@@ -6943,3 +6943,748 @@ Warning: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\sr
 [2025-06-18T17:10:34.953] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
 [2025-06-18T17:10:34.962] [DEBUG] debug-file - worker[4] exits with exit code 1.
 [2025-06-18T17:10:34.966] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-23T10:21:48.163] [DEBUG] debug-file - env: nodejsVersion=v18.20.1
+[2025-06-23T10:21:48.202] [DEBUG] debug-file - env: daemon=true
+[2025-06-23T10:21:48.165] [DEBUG] debug-file - env: hvigor-config.json5 content = {
+  modelVersion: '5.0.5',
+  dependencies: {},
+  execution: {},
+  logging: {},
+  debugging: {},
+  nodeOptions: {}
+}
+[2025-06-23T10:21:48.811] [DEBUG] debug-file - java daemon tryConnect failed Error: connect ECONNREFUSED 127.0.0.1:45050
+[2025-06-23T10:21:48.816] [DEBUG] debug-file - java daemon started at port 45050 pid 1460
+[2025-06-23T10:21:48.905] [DEBUG] debug-file - session manager: set active socket. socketId=6SeVKIDoV4OiKxkxAAAB
+[2025-06-23T10:21:49.260] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-23T10:21:49.282] [DEBUG] debug-file - Hvigor init with startParameters:{
+  hvigorfileTypeCheck: false,
+  parallelExecution: true,
+  incrementalExecution: true,
+  printStackTrace: false,
+  daemon: true,
+  analyze: 0,
+  logLevel: Level { level: 20000, levelStr: 'INFO', colour: 'green' }
+}
+[2025-06-23T10:21:49.312] [DEBUG] debug-file - Cache service initialization finished in 30 ms 
+[2025-06-23T10:21:49.321] [DEBUG] debug-file - hvigorfile, resolving C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\hvigorfile.ts
+[2025-06-23T10:21:50.489] [DEBUG] debug-file - hvigorfile, require result:  { default: { plugins: [] } }
+[2025-06-23T10:21:50.489] [DEBUG] debug-file - hvigorfile, binding system plugins null
+[2025-06-23T10:21:50.627] [DEBUG] debug-file - Start initialize project's product build option map with build mode debug.
+[2025-06-23T10:21:50.627] [DEBUG] debug-file - Picking option from product 'default' with build mode 'debug'.
+[2025-06-23T10:21:50.628] [DEBUG] debug-file - Product 'default' build option: {}
+[2025-06-23T10:21:50.628] [DEBUG] debug-file - End initialize project's product build option map with build mode 'debug'.
+[2025-06-23T10:21:50.636] [DEBUG] debug-file - Product 'default' using build option: {
+  "debuggable": true
+} in this build.
+[2025-06-23T10:21:50.655] [DEBUG] debug-file - Start recording SDK configuration permission data.
+[2025-06-23T10:21:50.678] [DEBUG] debug-file - Sdk init in 30 ms 
+[2025-06-23T10:21:50.696] [DEBUG] debug-file - Project task initialization takes 12 ms 
+[2025-06-23T10:21:50.696] [DEBUG] debug-file - hvigorfile, binding custom plugins []
+[2025-06-23T10:21:50.696] [DEBUG] debug-file - hvigorfile, no custom plugins were found in C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\hvigorfile.ts
+[2025-06-23T10:21:50.696] [DEBUG] debug-file - hvigorfile, resolve finished C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\hvigorfile.ts
+[2025-06-23T10:21:50.700] [DEBUG] debug-file - hvigorfile, resolving C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\hvigorfile.ts
+[2025-06-23T10:21:50.711] [DEBUG] debug-file - hvigorfile, require result:  { default: { plugins: [] } }
+[2025-06-23T10:21:50.711] [DEBUG] debug-file - hvigorfile, binding system plugins null
+[2025-06-23T10:21:50.720] [DEBUG] debug-file - Start initialize module-target build option map, moduleName=entry, buildMode=debug
+[2025-06-23T10:21:50.720] [DEBUG] debug-file - Target 'default' config: {}
+[2025-06-23T10:21:50.721] [DEBUG] debug-file - Target 'ohosTest' config: {}
+[2025-06-23T10:21:50.721] [DEBUG] debug-file - Module 'entry' target 'default' build option: {
+  "debuggable": true,
+  "copyFrom": "default",
+  "name": "debug"
+}
+[2025-06-23T10:21:50.721] [DEBUG] debug-file - Module 'entry' target 'ohosTest' build option: {
+  "debuggable": true,
+  "name": "default"
+}
+[2025-06-23T10:21:50.721] [DEBUG] debug-file - End initialize module-target build option map, moduleName=entry
+[2025-06-23T10:21:50.721] [DEBUG] debug-file - Module 'entry' target 'default' using build option: {
+  "debuggable": true,
+  "copyFrom": "default",
+  "name": "debug"
+} in this build.
+[2025-06-23T10:21:50.725] [DEBUG] debug-file - Module entry task initialization takes 3 ms 
+[2025-06-23T10:21:50.725] [DEBUG] debug-file - hvigorfile, binding custom plugins []
+[2025-06-23T10:21:50.725] [DEBUG] debug-file - hvigorfile, no custom plugins were found in C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\hvigorfile.ts
+[2025-06-23T10:21:50.725] [DEBUG] debug-file - hvigorfile, resolve finished C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\hvigorfile.ts
+[2025-06-23T10:21:50.776] [DEBUG] debug-file - hvigorfile, resolve hvigorfile dependencies in 50 ms 
+[2025-06-23T10:21:50.777] [DEBUG] debug-file - project has submodules:entry
+[2025-06-23T10:21:50.814] [DEBUG] debug-file - start to load updatedOhPackageInfo to the disk
+[2025-06-23T10:21:50.831] [DEBUG] debug-file - load to the disk finished
+[2025-06-23T10:21:50.832] [DEBUG] debug-file - Start to initialize dependency information.
+[2025-06-23T10:21:50.857] [DEBUG] debug-file - Module OpenHarmony_HeartBeat_Monitor Collected Dependency: 
+[2025-06-23T10:21:50.857] [DEBUG] debug-file - Module OpenHarmony_HeartBeat_Monitor's total dependency: 0
+[2025-06-23T10:21:50.858] [DEBUG] debug-file - Start to initialize dependency information.
+[2025-06-23T10:21:50.860] [DEBUG] debug-file - Module entry Collected Dependency: 
+[2025-06-23T10:21:50.860] [DEBUG] debug-file - Module entry's total dependency: 0
+[2025-06-23T10:21:50.864] [DEBUG] debug-file - Configuration phase cost:1 s 548 ms 
+[2025-06-23T10:21:50.866] [DEBUG] debug-file - Configuration task cost before running: 1 s 603 ms 
+[2025-06-23T10:21:50.868] [DEBUG] debug-file - Since there is no instance or instance is terminated, create a new worker pool.
+[2025-06-23T10:21:50.868] [DEBUG] debug-file - Worker pool is initialized with config:  {
+  minPoolNum: 2,
+  maxPoolNum: undefined,
+  maxCoreSize: undefined,
+  cacheCapacity: undefined,
+  cacheTtl: undefined
+}
+[2025-06-23T10:21:50.869] [DEBUG] debug-file - Create  resident worker with id: 0.
+[2025-06-23T10:21:50.871] [DEBUG] debug-file - Create  resident worker with id: 1.
+[2025-06-23T10:21:50.872] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:50.872] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:50.879] [DEBUG] debug-file - Executing task :entry:default@PreBuild
+[2025-06-23T10:21:50.888] [DEBUG] debug-file - entry:default@PreBuild is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5' has been changed.
+[2025-06-23T10:21:50.888] [DEBUG] debug-file - Incremental task entry:default@PreBuild pre-execution cost: 5 ms .
+[2025-06-23T10:21:50.889] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:50.889] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.019] [DEBUG] debug-file - current product is not Atomic service.
+[2025-06-23T10:21:51.026] [DEBUG] debug-file - Use tool [win32: JAVA_HOME, CLASSPATH]
+ [
+  {
+    JAVA_HOME: 'C:\\Users\\xingqiliang.DC\\AppData\\Local\\Huawei\\DevEco Studio\\jbr'
+  },
+  { CLASSPATH: undefined }
+]
+[2025-06-23T10:21:51.026] [DEBUG] debug-file - Use tool [win32: NODE_HOME]
+ [
+  {
+    NODE_HOME: 'C:\\Users\\xingqiliang.DC\\AppData\\Local\\Huawei\\DevEco Studio\\tools\\node'
+  }
+]
+[2025-06-23T10:21:51.026] [DEBUG] debug-file - entry : default@PreBuild cost memory 3.479736328125
+[2025-06-23T10:21:51.027] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 763 ms 
+[2025-06-23T10:21:51.028] [INFO] debug-file - Finished :entry:default@PreBuild... after 148 ms 
+[2025-06-23T10:21:51.029] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.029] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.030] [DEBUG] debug-file - Executing task :entry:default@CreateModuleInfo
+[2025-06-23T10:21:51.031] [DEBUG] debug-file - Task 'entry:default@CreateModuleInfo' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.031] [DEBUG] debug-file - entry : default@CreateModuleInfo cost memory 0.064849853515625
+[2025-06-23T10:21:51.031] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 768 ms 
+[2025-06-23T10:21:51.032] [INFO] debug-file - Finished :entry:default@CreateModuleInfo... after 2 ms 
+[2025-06-23T10:21:51.033] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.033] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.036] [DEBUG] debug-file - Executing task :entry:default@GenerateMetadata
+[2025-06-23T10:21:51.037] [DEBUG] debug-file - Task 'entry:default@GenerateMetadata' cost while wrapping incremental declarations: 2 ms 
+[2025-06-23T10:21:51.037] [DEBUG] debug-file - entry:default@GenerateMetadata is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5' has been changed.
+[2025-06-23T10:21:51.037] [DEBUG] debug-file - Incremental task entry:default@GenerateMetadata pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.037] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.038] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.046] [DEBUG] debug-file - entry : default@GenerateMetadata cost memory 0.1533355712890625
+[2025-06-23T10:21:51.046] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 783 ms 
+[2025-06-23T10:21:51.046] [INFO] debug-file - Finished :entry:default@GenerateMetadata... after 11 ms 
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - Executing task :entry:default@ConfigureCmake
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - entry : default@ConfigureCmake cost memory 0.037200927734375
+[2025-06-23T10:21:51.048] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 785 ms 
+[2025-06-23T10:21:51.048] [INFO] debug-file - Finished :entry:default@ConfigureCmake... after 1 ms 
+[2025-06-23T10:21:51.050] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.050] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.051] [DEBUG] debug-file - Executing task :entry:default@MergeProfile
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - entry:default@MergeProfile is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5' has been changed.
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - Incremental task entry:default@MergeProfile pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - Change app api release type with 'Release'
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - Change app compile API version with '5.0.0.71'
+[2025-06-23T10:21:51.052] [DEBUG] debug-file - Change app target API version with '12'
+[2025-06-23T10:21:51.053] [DEBUG] debug-file - Change app minimum API version with '12'
+[2025-06-23T10:21:51.053] [DEBUG] debug-file - Use cli appEnvironment
+[2025-06-23T10:21:51.069] [DEBUG] debug-file - entry : default@MergeProfile cost memory 0.34076690673828125
+[2025-06-23T10:21:51.069] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 806 ms 
+[2025-06-23T10:21:51.069] [INFO] debug-file - Finished :entry:default@MergeProfile... after 19 ms 
+[2025-06-23T10:21:51.071] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.071] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.072] [DEBUG] debug-file - Executing task :entry:default@CreateBuildProfile
+[2025-06-23T10:21:51.073] [DEBUG] debug-file - Task 'entry:default@CreateBuildProfile' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.074] [DEBUG] debug-file - Incremental task entry:default@CreateBuildProfile pre-execution cost: 2 ms .
+[2025-06-23T10:21:51.074] [DEBUG] debug-file - entry : default@CreateBuildProfile cost memory 0.11461639404296875
+[2025-06-23T10:21:51.075] [INFO] debug-file - UP-TO-DATE :entry:default@CreateBuildProfile...  
+[2025-06-23T10:21:51.076] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.076] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.077] [DEBUG] debug-file - Executing task :entry:default@PreCheckSyscap
+[2025-06-23T10:21:51.077] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.077] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.077] [DEBUG] debug-file - entry : default@PreCheckSyscap cost memory 0.0411376953125
+[2025-06-23T10:21:51.077] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 814 ms 
+[2025-06-23T10:21:51.077] [INFO] debug-file - Finished :entry:default@PreCheckSyscap... after 1 ms 
+[2025-06-23T10:21:51.079] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.079] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.084] [DEBUG] debug-file - Executing task :entry:default@GeneratePkgContextInfo
+[2025-06-23T10:21:51.084] [DEBUG] debug-file - Task 'entry:default@GeneratePkgContextInfo' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.084] [DEBUG] debug-file - entry : default@GeneratePkgContextInfo cost memory 0.04018402099609375
+[2025-06-23T10:21:51.084] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 821 ms 
+[2025-06-23T10:21:51.084] [INFO] debug-file - Finished :entry:default@GeneratePkgContextInfo... after 1 ms 
+[2025-06-23T10:21:51.086] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.086] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.087] [DEBUG] debug-file - Executing task :entry:default@ProcessIntegratedHsp
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - entry:default@ProcessIntegratedHsp is not up-to-date, since the output file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\build\cache\default\integrated_hsp\integratedHspCache.json' does not exist.
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - Incremental task entry:default@ProcessIntegratedHsp pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - entry : default@ProcessIntegratedHsp cost memory 0.12542724609375
+[2025-06-23T10:21:51.089] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 826 ms 
+[2025-06-23T10:21:51.090] [INFO] debug-file - Finished :entry:default@ProcessIntegratedHsp... after 2 ms 
+[2025-06-23T10:21:51.091] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.091] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.092] [DEBUG] debug-file - Executing task :entry:default@BuildNativeWithCmake
+[2025-06-23T10:21:51.092] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.092] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.092] [DEBUG] debug-file - entry : default@BuildNativeWithCmake cost memory 0.03873443603515625
+[2025-06-23T10:21:51.092] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 829 ms 
+[2025-06-23T10:21:51.092] [INFO] debug-file - Finished :entry:default@BuildNativeWithCmake... after 1 ms 
+[2025-06-23T10:21:51.094] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.094] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.095] [DEBUG] debug-file - Executing task :entry:default@MakePackInfo
+[2025-06-23T10:21:51.096] [DEBUG] debug-file - entry:default@MakePackInfo is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5' has been changed.
+[2025-06-23T10:21:51.096] [DEBUG] debug-file - Incremental task entry:default@MakePackInfo pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.096] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.096] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.097] [DEBUG] debug-file - Module Pack Info:  {
+  summary: {
+    app: { bundleName: 'c***p', bundleType: 'app', version: [Object] },
+    modules: [ [Object] ]
+  },
+  packages: [
+    {
+      deviceType: [Array],
+      moduleType: 'entry',
+      deliveryWithInstall: true,
+      name: 'entry-default'
+    }
+  ]
+}
+[2025-06-23T10:21:51.105] [DEBUG] debug-file - entry : default@MakePackInfo cost memory 0.21495819091796875
+[2025-06-23T10:21:51.105] [DEBUG] debug-file - runTaskFromQueue task cost before running: 1 s 842 ms 
+[2025-06-23T10:21:51.106] [INFO] debug-file - Finished :entry:default@MakePackInfo... after 11 ms 
+[2025-06-23T10:21:51.107] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.107] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.108] [DEBUG] debug-file - Executing task :entry:default@SyscapTransform
+[2025-06-23T10:21:51.108] [DEBUG] debug-file - File: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\syscap.json' from 'sysCapJsonPath' is not exists, just ignore.
+[2025-06-23T10:21:51.108] [DEBUG] debug-file - Task 'entry:default@SyscapTransform' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.119] [DEBUG] debug-file - Incremental task entry:default@SyscapTransform pre-execution cost: 11 ms .
+[2025-06-23T10:21:51.119] [DEBUG] debug-file - entry : default@SyscapTransform cost memory 0.147186279296875
+[2025-06-23T10:21:51.120] [INFO] debug-file - UP-TO-DATE :entry:default@SyscapTransform...  
+[2025-06-23T10:21:51.121] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.121] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.122] [DEBUG] debug-file - Executing task :entry:default@ProcessProfile
+[2025-06-23T10:21:51.123] [DEBUG] debug-file - entry:default@ProcessProfile is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\merge_profile\default\module.json' has been changed.
+[2025-06-23T10:21:51.123] [DEBUG] debug-file - Incremental task entry:default@ProcessProfile pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.123] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.123] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.125] [DEBUG] debug-file - [
+  'C:\\Users\\xingqiliang.DC\\AppData\\Local\\Huawei\\DevEco Studio\\tools\\node\\node.exe',
+  'C:\\Users\\xingqiliang.DC\\AppData\\Local\\OpenHarmony\\Sdk\\12\\ets\\build-tools\\ets-loader\\bin\\ark\\ts2abc.js',
+  '--target-api-version',
+  '12',
+  '--target-api-sub-version',
+  'beta1'
+]
+[2025-06-23T10:21:51.505] [DEBUG] debug-file - 12.0.2.0
+[2025-06-23T10:21:51.522] [DEBUG] debug-file - entry : default@ProcessProfile cost memory 2.443359375
+[2025-06-23T10:21:51.522] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 259 ms 
+[2025-06-23T10:21:51.522] [INFO] debug-file - Finished :entry:default@ProcessProfile... after 400 ms 
+[2025-06-23T10:21:51.524] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.524] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.525] [DEBUG] debug-file - Executing task :entry:default@ProcessRouterMap
+[2025-06-23T10:21:51.526] [DEBUG] debug-file - entry:default@ProcessRouterMap is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5' has been changed.
+[2025-06-23T10:21:51.527] [DEBUG] debug-file - Incremental task entry:default@ProcessRouterMap pre-execution cost: 2 ms .
+[2025-06-23T10:21:51.527] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.527] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.535] [DEBUG] debug-file - entry : default@ProcessRouterMap cost memory 0.21573638916015625
+[2025-06-23T10:21:51.535] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 272 ms 
+[2025-06-23T10:21:51.536] [INFO] debug-file - Finished :entry:default@ProcessRouterMap... after 11 ms 
+[2025-06-23T10:21:51.537] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.537] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.538] [DEBUG] debug-file - Executing task :entry:default@BuildNativeWithNinja
+[2025-06-23T10:21:51.538] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.538] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.538] [DEBUG] debug-file - entry : default@BuildNativeWithNinja cost memory 0.05941009521484375
+[2025-06-23T10:21:51.538] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 275 ms 
+[2025-06-23T10:21:51.539] [INFO] debug-file - Finished :entry:default@BuildNativeWithNinja... after 1 ms 
+[2025-06-23T10:21:51.540] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.540] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.541] [DEBUG] debug-file - restool module names: entry; moduleName=entry, taskName=default@ProcessResource
+[2025-06-23T10:21:51.549] [DEBUG] debug-file - Executing task :entry:default@ProcessResource
+[2025-06-23T10:21:51.554] [DEBUG] debug-file - Incremental task entry:default@ProcessResource pre-execution cost: 2 ms .
+[2025-06-23T10:21:51.554] [DEBUG] debug-file - entry : default@ProcessResource cost memory -13.025901794433594
+[2025-06-23T10:21:51.556] [INFO] debug-file - UP-TO-DATE :entry:default@ProcessResource...  
+[2025-06-23T10:21:51.557] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.557] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.560] [DEBUG] debug-file - Executing task :entry:default@GenerateLoaderJson
+[2025-06-23T10:21:51.568] [DEBUG] debug-file - entry:default@GenerateLoaderJson is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\router_map\default\temp-router-map.json' has been changed.
+[2025-06-23T10:21:51.568] [DEBUG] debug-file - Incremental task entry:default@GenerateLoaderJson pre-execution cost: 5 ms .
+[2025-06-23T10:21:51.580] [DEBUG] debug-file - entry : default@GenerateLoaderJson cost memory 1.2619400024414062
+[2025-06-23T10:21:51.580] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 317 ms 
+[2025-06-23T10:21:51.583] [INFO] debug-file - Finished :entry:default@GenerateLoaderJson... after 21 ms 
+[2025-06-23T10:21:51.584] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.585] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.585] [DEBUG] debug-file - Executing task :entry:default@ProcessLibs
+[2025-06-23T10:21:51.587] [DEBUG] debug-file - Incremental task entry:default@ProcessLibs pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.587] [DEBUG] debug-file - entry : default@ProcessLibs cost memory 0.14078521728515625
+[2025-06-23T10:21:51.588] [INFO] debug-file - UP-TO-DATE :entry:default@ProcessLibs...  
+[2025-06-23T10:21:51.589] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.589] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.589] [DEBUG] debug-file - restool module names: entry; moduleName=entry, taskName=default@CompileResource
+[2025-06-23T10:21:51.591] [DEBUG] debug-file - Executing task :entry:default@CompileResource
+[2025-06-23T10:21:51.594] [DEBUG] debug-file - entry:default@CompileResource is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources' has been changed.
+[2025-06-23T10:21:51.594] [DEBUG] debug-file - Incremental task entry:default@CompileResource pre-execution cost: 3 ms .
+[2025-06-23T10:21:51.650] [DEBUG] debug-file - Use tool [C:\Users\xingqiliang.DC\AppData\Local\OpenHarmony\Sdk\12\toolchains\restool.exe]
+ [
+  'C:\\Users\\xingqiliang.DC\\AppData\\Local\\OpenHarmony\\Sdk\\12\\toolchains\\restool.exe',
+  '-l',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\resConfig.json'
+]
+[2025-06-23T10:21:51.652] [DEBUG] debug-file - current process  memoryUsage: {
+  rss: 272465920,
+  heapTotal: 171290624,
+  heapUsed: 147622912,
+  external: 2984706,
+  arrayBuffers: 104982
+} os memoryUsage :11.652961730957031
+[2025-06-23T10:21:51.814] [DEBUG] debug-file - Warning: C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\AppScope\resources\base\media\layered_image.json is not png format
+
+[2025-06-23T10:21:51.827] [DEBUG] debug-file - Info: restool resources compile success.
+
+[2025-06-23T10:21:51.832] [WARN] debug-file - Warning: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources\base\media\background.png' is defined repeatedly.
+Warning: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources\base\media\foreground.png' is defined repeatedly.
+Warning: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources\base\media\layered_image.json' is defined repeatedly.
+
+[2025-06-23T10:21:51.833] [DEBUG] debug-file - entry : default@CompileResource cost memory 11.338272094726562
+[2025-06-23T10:21:51.833] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 570 ms 
+[2025-06-23T10:21:51.834] [INFO] debug-file - Finished :entry:default@CompileResource... after 243 ms 
+[2025-06-23T10:21:51.836] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.836] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.837] [DEBUG] debug-file - Executing task :entry:default@DoNativeStrip
+[2025-06-23T10:21:51.838] [DEBUG] debug-file - Task 'entry:default@DoNativeStrip' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.839] [DEBUG] debug-file - Incremental task entry:default@DoNativeStrip pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.839] [DEBUG] debug-file - entry : default@DoNativeStrip cost memory 0.0792694091796875
+[2025-06-23T10:21:51.839] [INFO] debug-file - UP-TO-DATE :entry:default@DoNativeStrip...  
+[2025-06-23T10:21:51.840] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.840] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.842] [DEBUG] debug-file - Executing task :entry:default@CompileArkTS
+[2025-06-23T10:21:51.848] [DEBUG] debug-file - entry:default@CompileArkTS is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader\default' has been changed.
+[2025-06-23T10:21:51.848] [DEBUG] debug-file - Incremental task entry:default@CompileArkTS pre-execution cost: 3 ms .
+[2025-06-23T10:21:51.858] [DEBUG] debug-file - build config:
+[2025-06-23T10:21:51.858] [DEBUG] debug-file - {
+  moduleType: 'entry',
+  perf: 0,
+  targetName: '.default',
+  packageManagerType: 'ohpm',
+  localPropertiesPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\local.properties',
+  isPreview: false,
+  isOhosTest: false,
+  isLocalTest: false,
+  buildMode: 'Debug',
+  watchMode: 'false',
+  aceProfilePath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\resources\\base\\profile',
+  etsLoaderPath: 'C:\\Users\\xingqiliang.DC\\AppData\\Local\\OpenHarmony\\Sdk\\12\\ets\\build-tools\\ets-loader',
+  modulePath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+  testFrameworkPar: {
+    testMode: undefined,
+    coveragePathFilter: undefined,
+    coverageMode: undefined
+  },
+  needCoverageInsert: false,
+  debugLine: false,
+  projectTopDir: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor',
+  compileSdkVersion: 12,
+  compatibleSdkVersion: 12,
+  compatibleSdkVersionStage: 'beta1',
+  bundleName: 'c***p',
+  etsLoaderVersion: '5.0.0.71',
+  etsLoaderReleaseType: 'Release',
+  aotCompileMode: 'type',
+  apPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\modules.ap',
+  entryModuleName: 'entry',
+  entryModuleVersion: '1.0.0',
+  entryPackageName: 'entry',
+  allModuleNameHash: 'bebdbb1694b34118006b8422f20369fb',
+  externalApiPaths: [],
+  compilerTypes: undefined,
+  isCrossplatform: false,
+  hvigorPluginFile: undefined,
+  compilePluginPath: undefined,
+  buildGeneratedProfilePath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\generated\\profile\\default',
+  bundleType: 'app',
+  arkTSVersion: undefined,
+  apiVersion: 12,
+  needCompleteSourcesMap: false,
+  isFaMode: false,
+  strictMode: undefined,
+  buildDir: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build',
+  deviceTypes: [ 'default', 'tablet' ],
+  useNormalizedOHMUrl: false,
+  pkgContextInfo: undefined,
+  ohPackagePathMap: {},
+  dependencyAliasMap: {},
+  permission: {
+    requestPermissions: [ [Object], [Object], [Object], [Object], [Object] ],
+    definePermissions: undefined
+  },
+  integratedHsp: false,
+  projectArkOption: undefined,
+  sourceMapDir: undefined,
+  branchElimination: false,
+  transformLib: undefined,
+  caseSensitiveCheck: false,
+  tsImportSendable: false,
+  resolveConflictMode: true,
+  depName2RootPath: {},
+  depName2DepInfo: {},
+  rootPathSet: [
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+  ],
+  useNativeResolver: true,
+  shouldEmitJs: true,
+  autoLazyImport: undefined,
+  allowEmptyBundleName: false,
+  singleFileEmit: false,
+  arkCompileCachePath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\cache\\default\\default@CompileArkTS\\esmodule',
+  reExportCheckMode: 'noCheck',
+  aceModuleJsonPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\ark_module.json',
+  appResource: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\ResourceTable.txt',
+  rawFileResource: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\resources\\rawfile',
+  resourceTableHash: '85d4966ba4b7003270ec5295fbe53f89',
+  runtimeOS: 'OpenHarmony',
+  sdkInfo: 'true:12:5.0.0.71:Release',
+  aceModuleRoot: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\src\\main\\ets',
+  compileMode: 'esmodule',
+  aceSuperVisualPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\src\\main\\supervisual',
+  aceBuildJson: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\loader\\default\\loader.json',
+  cachePath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\cache\\default\\default@CompileArkTS\\esmodule\\debug',
+  aceModuleBuild: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\loader_out\\default\\ets',
+  supportChunks: true,
+  declaredFilesPath: undefined,
+  pkgNameToPkgBriefInfo: {
+    entry: {
+      pkgRoot: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+      originalSourceRoots: undefined,
+      sourceRoots: [Array],
+      pkgName: 'entry'
+    }
+  },
+  projectModel: {
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\src\\main': {
+      moduleName: 'entry',
+      modulePkgPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+      belongProjectPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+    },
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\src\\ohosTest\\ets': {
+      moduleName: 'entry_test',
+      modulePkgPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+      belongProjectPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+    },
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\src\\ohosTest': {
+      moduleName: 'entry_test',
+      modulePkgPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+      belongProjectPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+    },
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry': {
+      moduleName: 'entry',
+      modulePkgPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry',
+      belongProjectPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+    },
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor': {
+      moduleName: 'OpenHarmony_HeartBeat_Monitor',
+      modulePkgPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor',
+      belongProjectPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor'
+    }
+  },
+  pkgJsonFileHash: 'ad14e34daa63b8462784838da084e1fc',
+  allModulePaths: [
+    'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry'
+  ],
+  routerMap: {},
+  obfuscationOptions: undefined,
+  compileBlockPkg: [],
+  mockParams: {
+    decorator: '@MockSetup',
+    packageName: '@ohos/hamock',
+    etsSourceRootPath: 'src/main/ets',
+    mockConfigPath: 'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\src\\mock\\mock-config.json5',
+    mockConfigKey2ModuleInfo: {}
+  },
+  copyCodeResourceEnable: true,
+  copyCodeResourceExcludes: [],
+  uiTransformOptimization: false,
+  otherPaths: {
+    'entry/*': [
+      '..\\*',
+      '..\\..\\..\\build\\default\\generated\\profile\\default\\*'
+    ]
+  },
+  collectImportersConfig: undefined
+}
+[2025-06-23T10:21:51.859] [DEBUG] debug-file - default@CompileArkTS work[0] is submitted.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - default@CompileArkTS work[0] is pushed to ready queue.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - A work dispatched to worker[15] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - A work dispatched to worker[14] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - A work dispatched to worker[13] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - A work dispatched to worker[12] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.860] [DEBUG] debug-file - A work dispatched to worker[11] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[10] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[9] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[8] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[7] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[6] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - A work dispatched to worker[5] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.861] [DEBUG] debug-file - Create  resident worker with id: 4.
+[2025-06-23T10:21:51.862] [DEBUG] debug-file - default@CompileArkTS work[0] has been dispatched to worker[4].
+[2025-06-23T10:21:51.862] [DEBUG] debug-file - default@CompileArkTS work[0] is dispatched.
+[2025-06-23T10:21:51.862] [DEBUG] debug-file - CopyResources startTime: 80938559808700
+[2025-06-23T10:21:51.862] [DEBUG] debug-file - default@CompileArkTS work[1] is submitted.
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - default@CompileArkTS work[1] is pushed to ready queue.
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - A work dispatched to worker[15] failed because unable to get work from ready queue.
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - Create  resident worker with id: 14.
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - default@CompileArkTS work[1] has been dispatched to worker[14].
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - default@CompileArkTS work[1] is dispatched.
+[2025-06-23T10:21:51.863] [DEBUG] debug-file - entry : default@CompileArkTS cost memory 2.1555633544921875
+[2025-06-23T10:21:51.865] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.865] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.867] [DEBUG] debug-file - Executing task :entry:default@BuildJS
+[2025-06-23T10:21:51.869] [DEBUG] debug-file - entry : default@BuildJS cost memory 0.54461669921875
+[2025-06-23T10:21:51.869] [DEBUG] debug-file - runTaskFromQueue task cost before running: 2 s 606 ms 
+[2025-06-23T10:21:51.870] [INFO] debug-file - Finished :entry:default@BuildJS... after 3 ms 
+[2025-06-23T10:21:51.871] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:21:51.871] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:21:51.876] [DEBUG] debug-file - Executing task :entry:default@CacheNativeLibs
+[2025-06-23T10:21:51.876] [DEBUG] debug-file - Task 'entry:default@CacheNativeLibs' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:21:51.877] [DEBUG] debug-file - Incremental task entry:default@CacheNativeLibs pre-execution cost: 1 ms .
+[2025-06-23T10:21:51.877] [DEBUG] debug-file - entry : default@CacheNativeLibs cost memory 0.093780517578125
+[2025-06-23T10:21:51.877] [INFO] debug-file - UP-TO-DATE :entry:default@CacheNativeLibs...  
+[2025-06-23T10:21:52.577] [DEBUG] debug-file - worker[14] has one work done.
+[2025-06-23T10:21:52.577] [DEBUG] debug-file - CopyResources is end, endTime: 80939274848100
+[2025-06-23T10:21:52.577] [DEBUG] debug-file - default@CompileArkTS work[1] done.
+[2025-06-23T10:21:52.577] [DEBUG] debug-file - A work dispatched to worker[14] failed because unable to get work from ready queue.
+[2025-06-23T10:22:08.969] [INFO] debug-file - [33mWARN: [33mArkTS:WARN File: C:/Users/xingqiliang.DC/Desktop/OpenHarmony_HeartBeat_Monitor/entry/src/main/ets/pages/Index.ets:109:29
+ 'decode' has been deprecated.
+[39m
+[33mWARN: [33mArkTS:WARN File: C:/Users/xingqiliang.DC/Desktop/OpenHarmony_HeartBeat_Monitor/entry/src/main/ets/pages/Index.ets:467:44
+ 'getCurrentTime' has been deprecated.
+[39m
+[33mWARN: [33mArkTS:WARN File: C:/Users/xingqiliang.DC/Desktop/OpenHarmony_HeartBeat_Monitor/entry/src/main/ets/pages/Index.ets:592:34
+ 'encode' has been deprecated.
+[39m
+
+[2025-06-23T10:22:08.970] [DEBUG] debug-file - Ark compile task finished.finished time is 80955667291800
+[2025-06-23T10:22:08.970] [DEBUG] debug-file - worker[4] has one work done.
+[2025-06-23T10:22:08.975] [DEBUG] debug-file - default@CompileArkTS work[0] done.
+[2025-06-23T10:22:08.975] [DEBUG] debug-file - A work dispatched to worker[4] failed because unable to get work from ready queue.
+[2025-06-23T10:22:08.977] [INFO] debug-file - Finished :entry:default@CompileArkTS... after 15 s 550 ms 
+[2025-06-23T10:22:08.979] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:08.979] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:08.979] [DEBUG] debug-file - Executing task :entry:default@GeneratePkgModuleJson
+[2025-06-23T10:22:08.980] [DEBUG] debug-file - Task 'entry:default@GeneratePkgModuleJson' cost while wrapping incremental declarations: 1 ms 
+[2025-06-23T10:22:08.980] [DEBUG] debug-file - entry:default@GeneratePkgModuleJson is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\module.json' has been changed.
+[2025-06-23T10:22:08.980] [DEBUG] debug-file - Incremental task entry:default@GeneratePkgModuleJson pre-execution cost: 1 ms .
+[2025-06-23T10:22:08.980] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:08.980] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:08.982] [DEBUG] debug-file - entry : default@GeneratePkgModuleJson cost memory 0.12726593017578125
+[2025-06-23T10:22:08.982] [DEBUG] debug-file - runTaskFromQueue task cost before running: 19 s 719 ms 
+[2025-06-23T10:22:08.982] [INFO] debug-file - Finished :entry:default@GeneratePkgModuleJson... after 3 ms 
+[2025-06-23T10:22:08.984] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:08.984] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:08.988] [DEBUG] debug-file - Executing task :entry:default@PackageHap
+[2025-06-23T10:22:08.992] [DEBUG] debug-file - entry:default@PackageHap is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\module.json' has been changed.
+[2025-06-23T10:22:08.992] [DEBUG] debug-file - Incremental task entry:default@PackageHap pre-execution cost: 3 ms .
+[2025-06-23T10:22:08.992] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:08.992] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:08.993] [DEBUG] debug-file - Use tool [C:\Users\xingqiliang.DC\AppData\Local\OpenHarmony\Sdk\12\toolchains\lib\app_packing_tool.jar]
+ [
+  'java',
+  '-Dfile.encoding=GBK',
+  '-jar',
+  'C:\\Users\\xingqiliang.DC\\AppData\\Local\\OpenHarmony\\Sdk\\12\\toolchains\\lib\\app_packing_tool.jar',
+  '--mode',
+  'hap',
+  '--force',
+  'true',
+  '--lib-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\stripped_native_libs\\default',
+  '--json-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\package\\default\\module.json',
+  '--resources-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\resources',
+  '--index-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\res\\default\\resources.index',
+  '--pack-info-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\outputs\\default\\pack.info',
+  '--out-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\outputs\\default\\entry-default-unsigned.hap',
+  '--rpcid-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\syscap\\default\\rpcid.sc',
+  '--ets-path',
+  'C:\\Users\\xingqiliang.DC\\Desktop\\OpenHarmony_HeartBeat_Monitor\\entry\\build\\default\\intermediates\\loader_out\\default\\ets'
+]
+[2025-06-23T10:22:08.995] [DEBUG] debug-file - default@PackageHap work[2] is submitted.
+[2025-06-23T10:22:08.995] [DEBUG] debug-file - default@PackageHap work[2] is pushed to ready queue.
+[2025-06-23T10:22:08.995] [DEBUG] debug-file - A work dispatched to worker[15] failed because unable to get work from ready queue.
+[2025-06-23T10:22:08.996] [DEBUG] debug-file - default@PackageHap work[2] has been dispatched to worker[14].
+[2025-06-23T10:22:08.996] [DEBUG] debug-file - default@PackageHap work[2] is dispatched.
+[2025-06-23T10:22:09.006] [DEBUG] debug-file - entry : default@PackageHap cost memory 0.07089996337890625
+[2025-06-23T10:22:09.127] [DEBUG] debug-file - current process  memoryUsage: {
+  rss: 686968832,
+  heapTotal: 46129152,
+  heapUsed: 43817888,
+  external: 2134531,
+  arrayBuffers: 83344
+} os memoryUsage :12.042949676513672
+[2025-06-23T10:22:09.497] [DEBUG] debug-file - worker[14] has one work done.
+[2025-06-23T10:22:09.497] [DEBUG] debug-file - default@PackageHap work[2] done.
+[2025-06-23T10:22:09.497] [DEBUG] debug-file - A work dispatched to worker[14] failed because unable to get work from ready queue.
+[2025-06-23T10:22:09.499] [INFO] debug-file - Finished :entry:default@PackageHap... after 441 ms 
+[2025-06-23T10:22:09.501] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:09.502] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:09.504] [DEBUG] debug-file - Executing task :entry:default@SignHap
+[2025-06-23T10:22:09.506] [DEBUG] debug-file - entry:default@SignHap is not up-to-date, since the input file 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\entry-default-unsigned.hap' has been changed.
+[2025-06-23T10:22:09.506] [DEBUG] debug-file - Incremental task entry:default@SignHap pre-execution cost: 2 ms .
+[2025-06-23T10:22:09.506] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:09.506] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:10.338] [DEBUG] debug-file - java daemon socket received message:{"code":0,"message":"verify profile success"}
+[2025-06-23T10:22:10.353] [DEBUG] debug-file - java daemon socket close code:1000 reason:close by user
+[2025-06-23T10:22:10.607] [DEBUG] debug-file - java daemon socket received message:{"code":0,"message":"sign app success"}
+[2025-06-23T10:22:10.608] [DEBUG] debug-file - entry : default@SignHap cost memory 0.372406005859375
+[2025-06-23T10:22:10.608] [DEBUG] debug-file - runTaskFromQueue task cost before running: 21 s 345 ms 
+[2025-06-23T10:22:10.608] [INFO] debug-file - Finished :entry:default@SignHap... after 1 s 104 ms 
+[2025-06-23T10:22:10.611] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:10.611] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:10.612] [DEBUG] debug-file - Executing task :entry:default@CollectDebugSymbol
+[2025-06-23T10:22:10.614] [DEBUG] debug-file - jsonObjWithoutParam {} at undefined
+[2025-06-23T10:22:10.615] [DEBUG] debug-file - jsonObjWithoutParam {"name":"entry","version":"1.0.0","description":"Please describe the basic information.","main":"","author":"","license":"","dependencies":{}} at undefined
+[2025-06-23T10:22:10.615] [DEBUG] debug-file - entry : default@CollectDebugSymbol cost memory 0.2442626953125
+[2025-06-23T10:22:10.615] [DEBUG] debug-file - runTaskFromQueue task cost before running: 21 s 351 ms 
+[2025-06-23T10:22:10.615] [INFO] debug-file - Finished :entry:default@CollectDebugSymbol... after 4 ms 
+[2025-06-23T10:22:10.616] [DEBUG] debug-file - Executing task :entry:assembleHap
+[2025-06-23T10:22:10.616] [DEBUG] debug-file - entry : assembleHap cost memory 0.0118408203125
+[2025-06-23T10:22:10.616] [DEBUG] debug-file - runTaskFromQueue task cost before running: 21 s 353 ms 
+[2025-06-23T10:22:10.616] [INFO] debug-file - Finished :entry:assembleHap... after 1 ms 
+[2025-06-23T10:22:10.623] [DEBUG] debug-file - BUILD SUCCESSFUL in 21 s 359 ms 
+[2025-06-23T10:22:10.624] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\AppScope\app.json5 cache by regenerate.
+[2025-06-23T10:22:10.624] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5 cache from map.
+[2025-06-23T10:22:10.624] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\build-profile.json5 cache by regenerate.
+[2025-06-23T10:22:10.624] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build-profile.json5 cache by regenerate.
+[2025-06-23T10:22:10.625] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources\base\profile\main_pages.json cache by regenerate.
+[2025-06-23T10:22:10.625] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\hvigor\hvigor-config.json5 cache by regenerate.
+[2025-06-23T10:22:10.625] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\mock\mock-config.json5 cache by regenerate.
+[2025-06-23T10:22:10.625] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\oh-package.json5 cache by regenerate.
+[2025-06-23T10:22:10.625] [DEBUG] debug-file - Update task entry:default@PreBuild input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\oh-package.json5 cache by regenerate.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Incremental task entry:default@PreBuild post-execution cost:3 ms .
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@CreateModuleInfo output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\generated\profile\default\ModuleInfo.ts cache.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Incremental task entry:default@CreateModuleInfo post-execution cost:1 ms .
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@GenerateMetadata input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5 cache from map.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@GenerateMetadata output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\hap_metadata\default\output_metadata.json cache.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Incremental task entry:default@GenerateMetadata post-execution cost:1 ms .
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@MergeProfile input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\AppScope\app.json5 cache by regenerate.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@MergeProfile input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\build-profile.json5 cache by regenerate.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@MergeProfile input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5 cache from map.
+[2025-06-23T10:22:10.626] [DEBUG] debug-file - Update task entry:default@MergeProfile output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\merge_profile\default\module.json cache.
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - Incremental task entry:default@MergeProfile post-execution cost:1 ms .
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@CreateBuildProfile is up-to-date.
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - Update task entry:default@GeneratePkgContextInfo output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader\default\pkgContextInfo.json cache.
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - Incremental task entry:default@GeneratePkgContextInfo post-execution cost:1 ms .
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - Update task entry:default@ProcessIntegratedHsp output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\build\cache\default\integrated_hsp\integratedHspCache.json cache.
+[2025-06-23T10:22:10.627] [DEBUG] debug-file - Incremental task entry:default@ProcessIntegratedHsp post-execution cost:1 ms .
+[2025-06-23T10:22:10.628] [DEBUG] debug-file - Update task entry:default@MakePackInfo input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\AppScope\app.json5 cache by regenerate.
+[2025-06-23T10:22:10.628] [DEBUG] debug-file - Update task entry:default@MakePackInfo input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5 cache from map.
+[2025-06-23T10:22:10.628] [DEBUG] debug-file - Update task entry:default@MakePackInfo input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\build-profile.json5 cache by regenerate.
+[2025-06-23T10:22:10.628] [DEBUG] debug-file - Update task entry:default@MakePackInfo input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources\base\profile\backup_config.json cache by regenerate.
+[2025-06-23T10:22:10.628] [DEBUG] debug-file - Update task entry:default@MakePackInfo output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\pack.info cache.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Incremental task entry:default@MakePackInfo post-execution cost:2 ms .
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@SyscapTransform is up-to-date.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Update task entry:default@ProcessProfile input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\merge_profile\default\module.json cache from map.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Update task entry:default@ProcessProfile output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\process_profile\default\module.json cache.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Incremental task entry:default@ProcessProfile post-execution cost:1 ms .
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Update task entry:default@ProcessRouterMap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\oh-package.json5 cache by regenerate.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Update task entry:default@ProcessRouterMap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\oh-package.json5 cache by regenerate.
+[2025-06-23T10:22:10.629] [DEBUG] debug-file - Update task entry:default@ProcessRouterMap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\module.json5 cache from map.
+[2025-06-23T10:22:10.630] [DEBUG] debug-file - Update task entry:default@ProcessRouterMap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\router_map\default\temp-router-map.json cache.
+[2025-06-23T10:22:10.630] [DEBUG] debug-file - Update task entry:default@ProcessRouterMap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\router_map\default\loader-router-map.json cache.
+[2025-06-23T10:22:10.630] [DEBUG] debug-file - Incremental task entry:default@ProcessRouterMap post-execution cost:2 ms .
+[2025-06-23T10:22:10.630] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@ProcessResource is up-to-date.
+[2025-06-23T10:22:10.631] [DEBUG] debug-file - Update task entry:default@GenerateLoaderJson input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\mock\mock-config.json5 cache by regenerate.
+[2025-06-23T10:22:10.631] [DEBUG] debug-file - Update task entry:default@GenerateLoaderJson input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\router_map\default\temp-router-map.json cache from map.
+[2025-06-23T10:22:10.631] [DEBUG] debug-file - Update task entry:default@GenerateLoaderJson output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader\default\loader.json cache.
+[2025-06-23T10:22:10.632] [DEBUG] debug-file - Incremental task entry:default@GenerateLoaderJson post-execution cost:2 ms .
+[2025-06-23T10:22:10.632] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@ProcessLibs is up-to-date.
+[2025-06-23T10:22:10.632] [DEBUG] debug-file - Update task entry:default@CompileResource input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\resources cache from map.
+[2025-06-23T10:22:10.632] [DEBUG] debug-file - Update task entry:default@CompileResource input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\AppScope\resources cache by regenerate.
+[2025-06-23T10:22:10.633] [DEBUG] debug-file - Update task entry:default@CompileResource input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\process_profile\default\module.json cache by regenerate.
+[2025-06-23T10:22:10.633] [DEBUG] debug-file - Update task entry:default@CompileResource input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\resConfig.json cache by regenerate.
+[2025-06-23T10:22:10.633] [DEBUG] debug-file - Update task entry:default@CompileResource output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default cache.
+[2025-06-23T10:22:10.635] [DEBUG] debug-file - Update task entry:default@CompileResource output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\generated\r\default\ResourceTable.h cache.
+[2025-06-23T10:22:10.635] [DEBUG] debug-file - Update task entry:default@CompileResource output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\generated\r\default cache.
+[2025-06-23T10:22:10.635] [DEBUG] debug-file - Incremental task entry:default@CompileResource post-execution cost:4 ms .
+[2025-06-23T10:22:10.635] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@DoNativeStrip is up-to-date.
+[2025-06-23T10:22:10.636] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader\default cache from map.
+[2025-06-23T10:22:10.636] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\ResourceTable.txt cache by regenerate.
+[2025-06-23T10:22:10.637] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\ark_module.json cache by regenerate.
+[2025-06-23T10:22:10.637] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\resources\base\profile cache by regenerate.
+[2025-06-23T10:22:10.637] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\main\ets cache by regenerate.
+[2025-06-23T10:22:10.637] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\generated\profile\default\BuildProfile.ets cache by regenerate.
+[2025-06-23T10:22:10.638] [DEBUG] debug-file - Update task entry:default@CompileArkTS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\src\mock\mock-config.json5 cache by regenerate.
+[2025-06-23T10:22:10.638] [DEBUG] debug-file - Update task entry:default@CompileArkTS output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader_out\default\ets cache.
+[2025-06-23T10:22:10.638] [DEBUG] debug-file - Incremental task entry:default@CompileArkTS post-execution cost:4 ms .
+[2025-06-23T10:22:10.639] [DEBUG] debug-file - Update task entry:default@BuildJS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader\default cache by regenerate.
+[2025-06-23T10:22:10.639] [DEBUG] debug-file - Update task entry:default@BuildJS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\ResourceTable.txt cache by regenerate.
+[2025-06-23T10:22:10.639] [DEBUG] debug-file - Update task entry:default@BuildJS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\ark_module.json cache by regenerate.
+[2025-06-23T10:22:10.640] [DEBUG] debug-file - Update task entry:default@BuildJS input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\resources\base\profile cache by regenerate.
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - Update task entry:default@BuildJS output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader_out\default\js cache.
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - Incremental task entry:default@BuildJS post-execution cost:3 ms .
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - There is no need to refresh cache, since the incremental task entry:default@CacheNativeLibs is up-to-date.
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - Update task entry:default@GeneratePkgModuleJson input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\module.json cache from map.
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - Update task entry:default@GeneratePkgModuleJson output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\package\default\module.json cache.
+[2025-06-23T10:22:10.641] [DEBUG] debug-file - Incremental task entry:default@GeneratePkgModuleJson post-execution cost:1 ms .
+[2025-06-23T10:22:10.642] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\stripped_native_libs\default cache by regenerate.
+[2025-06-23T10:22:10.642] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\module.json cache from map.
+[2025-06-23T10:22:10.642] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\resources cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\res\default\resources.index cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\pack.info cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\syscap\default\rpcid.sc cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader_out\default\ets cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader_out\default\ets\sourceMaps.map cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\generated\profile\default\BuildProfile.ets cache by regenerate.
+[2025-06-23T10:22:10.643] [DEBUG] debug-file - Update task entry:default@PackageHap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\entry-default-unsigned.hap cache.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@PackageHap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\source_map\default\sourceMaps.map cache.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@PackageHap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\mapping\sourceMaps.map cache.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Incremental task entry:default@PackageHap post-execution cost:3 ms .
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@SignHap input file:C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.cer cache by regenerate.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@SignHap input file:C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p7b cache by regenerate.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@SignHap input file:C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p12 cache by regenerate.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@SignHap input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\entry-default-unsigned.hap cache from map.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Update task entry:default@SignHap output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\entry-default-signed.hap cache.
+[2025-06-23T10:22:10.644] [DEBUG] debug-file - Incremental task entry:default@SignHap post-execution cost:1 ms .
+[2025-06-23T10:22:10.646] [DEBUG] debug-file - Update task entry:default@CollectDebugSymbol input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\loader_out\default\ets\sourceMaps.map cache by regenerate.
+[2025-06-23T10:22:10.646] [DEBUG] debug-file - Update task entry:default@CollectDebugSymbol input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\libs\default cache by regenerate.
+[2025-06-23T10:22:10.646] [DEBUG] debug-file - Update task entry:default@CollectDebugSymbol output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\symbol cache.
+[2025-06-23T10:22:10.646] [DEBUG] debug-file - Incremental task entry:default@CollectDebugSymbol post-execution cost:2 ms .
+[2025-06-23T10:22:10.703] [DEBUG] debug-file - Current worker pool is stopped or closed.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Clear worker 0.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Worker 0 has been cleared.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current idle worker size: 3.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Clear worker 1.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Worker 1 has been cleared.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current idle worker size: 2.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Clear worker 4.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Worker 4 has been cleared.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current idle worker size: 1.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Clear worker 14.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Worker 14 has been cleared.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current idle worker size: 0.
+[2025-06-23T10:22:10.704] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-23T10:22:10.705] [DEBUG] debug-file - hvigor build process will be closed.
+[2025-06-23T10:22:10.705] [DEBUG] debug-file - java daemon socket close code:1000 reason:close by user
+[2025-06-23T10:22:10.706] [DEBUG] debug-file - Current worker pool is terminated.
+[2025-06-23T10:22:10.762] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-23T10:22:10.773] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-23T10:22:10.762] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-23T10:22:10.765] [DEBUG] debug-file - worker[0] exits with exit code 1.
+[2025-06-23T10:22:10.766] [DEBUG] debug-file - worker[1] exits with exit code 1.
+[2025-06-23T10:22:10.773] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-23T10:22:10.774] [DEBUG] debug-file - worker[14] exits with exit code 1.
+[2025-06-23T10:22:10.812] [DEBUG] debug-file - worker[4] exits with exit code 1.
