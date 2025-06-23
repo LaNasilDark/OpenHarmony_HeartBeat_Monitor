@@ -5,7 +5,7 @@
         "MODULE_NAME": "1043bfc77febe75fafec0c4309faccf1",
         "API_TYPE": "stageMode",
         "INCREMENTAL_TASKS": {
-          "COMPILE_ARKTS": true
+          "COMPILE_ARKTS": false
         }
       }
     ],
@@ -18,31 +18,41 @@
     "IS_HVIGORFILE_TYPE_CHECK": false,
     "TASK_TIME": {
       "1043bfc77febe75fafec0c4309faccf1": {
-        "PreBuild": 149002500,
-        "CreateModuleInfo": 1688200,
-        "GenerateMetadata": 10298300,
-        "ConfigureCmake": 308900,
-        "MergeProfile": 18579400,
-        "PreCheckSyscap": 572500,
-        "GeneratePkgContextInfo": 630200,
-        "ProcessIntegratedHsp": 2128000,
-        "BuildNativeWithCmake": 430300,
-        "MakePackInfo": 10925400,
-        "ProcessProfile": 400021800,
-        "ProcessRouterMap": 10700600,
-        "BuildNativeWithNinja": 1096800,
-        "GenerateLoaderJson": 23490900,
-        "CompileResource": 243299100,
-        "BuildJS": 2933200,
-        "CompileArkTS": 17134853300,
-        "GeneratePkgModuleJson": 2588900,
-        "PackageHap": 511129000,
-        "SignHap": 1104206800,
-        "CollectDebugSymbol": 3216200,
-        "assembleHap": 260000
+        "init": 663000,
+        "PreBuild": 183208200,
+        "CreateModuleInfo": 2266100,
+        "GenerateMetadata": 12845800,
+        "ConfigureCmake": 415500,
+        "MergeProfile": 13158300,
+        "CreateBuildProfile": 13177800,
+        "PreCheckSyscap": 803800,
+        "GeneratePkgContextInfo": 898000,
+        "ProcessIntegratedHsp": 2280900,
+        "BuildNativeWithCmake": 615300,
+        "MakePackInfo": 15407800,
+        "ProcessProfile": 183032700,
+        "ProcessRouterMap": 9521400,
+        "BuildNativeWithNinja": 2543200,
+        "ProcessResource": 28492300,
+        "GenerateLoaderJson": 32891400,
+        "CompileResource": 280104100,
+        "BuildJS": 5079900,
+        "SyscapTransform": 1460044600,
+        "ProcessLibs": 1757300400,
+        "DoNativeStrip": 313737700,
+        "CacheNativeLibs": 1484645200,
+        "CompileArkTS": 10217161200,
+        "GeneratePkgModuleJson": 4717300,
+        "PackageHap": 724845800,
+        "SignHap": 1411711700,
+        "CollectDebugSymbol": 4478100,
+        "assembleHap": 377200
+      },
+      "APP": {
+        "init": 291000
       }
     },
-    "BUILD_ID": "202506231021492630",
-    "TOTAL_TIME": 21358860500
+    "BUILD_ID": "202506231410306950",
+    "TOTAL_TIME": 13523873700
   }
 }
