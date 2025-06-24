@@ -8,16 +8,16 @@ import { statfs } from '@kit.CoreFileKit';
 
 // 接口定义
 export interface DeviceInfo {
-  cpuLoad: string | number;
+  cpuLoad: number;
   memInfo: MemObjectType;
   disk: DiskObjectType;
-  net: NetObjectType; 
+  net: NetObjectType;
   mac: string;
   ipAddress: string;
-  upTime: string | number;
-  time: string | number;
+  upTime: number;
+  time: number;
   sn: string;
-  cpuTemperature: string | number;
+  cpuTemperature: number;
   agentVersion: string;
 }
 
@@ -370,19 +370,19 @@ export class DeviceMonitor {
   }
 
   // 获取系统运行时间
-  private async fetchUptimeFromProcUptime(): Promise<string | null> {
+  private async fetchUptimeFromProcUptime(): Promise<number | null> {
     try {
       const content = await this.readSystemFileContent("/proc/uptime");
       if (content === 'N/A' || !content) {
         return null;
       }
-      
+
       const parts = content.split(/\s+/);
       if (parts.length >= 1) {
         const uptimeSeconds = parseFloat(parts[0]);
         if (!isNaN(uptimeSeconds)) {
-          let upTimeDays = uptimeSeconds / 86400;
-          return upTimeDays.toFixed(2);
+          const upTimeDays = uptimeSeconds / 86400;
+          return Number(upTimeDays.toFixed(2));
         }
       }
       return null;
@@ -399,19 +399,19 @@ export class DeviceMonitor {
   }
 
   // 获取系统时间
-  private async fetchSystemTime(): Promise<string> {
-    const currentTime = await systemDateTime.getCurrentTime(true) / 1000000000;
-    return currentTime.toString();
+  private async fetchSystemTime(): Promise<number> {
+    const currentTime = await systemDateTime.getCurrentTime(true);
+    return currentTime / 1_000_000_000;
   }
 
   // 获取CPU温度
-  private async fetchCpuTemperature(): Promise<string> {
+  private async fetchCpuTemperature(): Promise<number | string> {
     const thermalFilePath = '/sys/class/thermal/thermal_zone0/temp';
     const tempStr = await this.readSystemFileContent(thermalFilePath);
     if (tempStr !== 'N/A' && tempStr !== 'Loading...') {
       const numericTemp = parseFloat(tempStr);
       if (!isNaN(numericTemp)) {
-        return (numericTemp / 1000).toFixed(1);
+        return parseFloat((numericTemp / 1000).toFixed(1));
       }
     }
     return tempStr;
@@ -462,49 +462,57 @@ export class DeviceMonitor {
   // 收集所有设备信息
   public async collectDeviceInfo(): Promise<DeviceInfo> {
     try {
-      // 并行收集基础信息
-      const basicInfo = await Promise.all([
+      // 并行收集所有设备信息，提高效率
+      const results = await Promise.all([
         this.fetchCpuTemperature(),
         this.fetchMacAddress(),
         this.fetchSN(),
         this.fetchSystemTime(),
         this.fetchUptimeFromProcUptime(),
-        this.fetchLocalIp()
+        this.fetchLocalIp(),
+        this.getCpuPercent(),
+        this.fetchMemInfo(),
+        this.fetchDiskInfo(this.config.diskMountPath),
+        this.fetchNetworkInfo(this.config.networkInterface)
       ]);
-      const cpuTemp = basicInfo[0];
-      const mac = basicInfo[1];
-      const sn = basicInfo[2];
-      const time = basicInfo[3];
-      const upTime = basicInfo[4];
-      const localIp = basicInfo[5];
 
+      const cpuTemp = results[0] as number | string;
+      const mac = results[1] as string;
+      const sn = results[2] as string;
+      const time = results[3] as number;
+      const upTime = results[4] as number | null;
+      const localIp = results[5] as string;
+      const cpuLoad = results[6] as number;
+      const memInfo = results[7] as MemObjectType;
+      const diskInfo = results[8] as DiskObjectType;
+      const netInfo = results[9] as NetObjectType;
 
-      // 更新缓存的基础信息
-      this.deviceData.cpuTemp = cpuTemp;
-      this.deviceData.mac = mac === 'N/A' ? 'NoMAC' : mac;
-      this.deviceData.sn = sn;
-      this.deviceData.time = time;
-      this.deviceData.upTime = upTime || 'ErrorFetchingUptime';
-      this.deviceData.localIp = localIp;
+      // 更新内部缓存数据
+      this.deviceData = {
+        cpuTemp: cpuTemp.toString(),
+        mac: mac === 'N/A' ? 'NoMAC' : mac,
+        sn: sn,
+        time: time.toString(),
+        upTime: upTime?.toString() || 'ErrorFetchingUptime',
+        localIp: localIp,
+        cpuLoad: cpuLoad.toString(),
+        mem: memInfo,
+        disk: diskInfo,
+        net: netInfo
+      };
 
-      // 收集需要较长时间的信息
-      this.deviceData.cpuLoad = (await this.getCpuPercent()).toString();
-      this.deviceData.mem = await this.fetchMemInfo();
-      this.deviceData.disk = await this.fetchDiskInfo(this.config.diskMountPath);
-      this.deviceData.net = await this.fetchNetworkInfo(this.config.networkInterface);
-
-      // 构建设备信息对象
+      // 构建并返回设备信息对象
       const deviceInfo: DeviceInfo = {
-        cpuLoad: this.deviceData.cpuLoad,
-        memInfo: this.deviceData.mem,
-        disk: this.deviceData.disk,
-        net: this.deviceData.net,
+        cpuLoad: cpuLoad,
+        memInfo: memInfo,
+        disk: diskInfo,
+        net: netInfo,
         mac: this.deviceData.mac,
-        ipAddress: this.deviceData.localIp,
-        upTime: Number(this.deviceData.upTime),
-        time: Number(this.deviceData.time),
-        sn: this.deviceData.sn,
-        cpuTemperature: Number(this.deviceData.cpuTemp),
+        ipAddress: localIp,
+        upTime: upTime || -1, // 如果获取失败则返回-1
+        time: time,
+        sn: sn,
+        cpuTemperature: typeof cpuTemp === 'number' ? cpuTemp : -1, // 如果获取失败则返回-1
         agentVersion: this.config.agentVersion
       };
 
@@ -512,6 +520,7 @@ export class DeviceMonitor {
       return deviceInfo;
     } catch (error) {
       hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to collect device info: ${JSON.stringify(error)}`);
+      // 重新抛出包装为Error对象的错误，以符合ArkTS规范
       throw new Error(`Failed to collect device info: ${JSON.stringify(error)}`);
     }
   }
