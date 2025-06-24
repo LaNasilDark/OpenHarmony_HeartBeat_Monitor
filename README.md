@@ -64,22 +64,26 @@ OpenHarmony 设备          网络          监控服务器
 ## 项目结构
 
 ```
-OpenHarmony_Test_APP/
+OpenHarmony_HeartBeat_Monitor/
 ├── README.md                    # 项目说明文档
-├── build-profile.json5          # 构建配置
-├── oh-package.json5             # 包依赖配置
-├── 
-├── entry/                       # 应用主模块
-│   ├── src/main/ets/pages/
-│   │   └── Index.ets            # 主界面和核心逻辑
-│   ├── src/main/module.json5    # 模块配置
-│   └── build-profile.json5     # 模块构建配置
-├── 
+├── hvigorfile.ts                # Hvigor 编译脚本
 ├── monitor_run.py               # Python 监控服务器
 ├── udp_listener.py              # UDP 监听工具
-└── AppScope/                    # 应用全局配置
-    ├── app.json5
-    └── resources/
+├── AppScope/                    # 应用级配置
+│   └── app.json5
+└── entry/                       # 应用主模块
+    ├── hvigorfile.ts
+    ├── oh-package.json5
+    └── src/
+        └── main/
+            ├── ets/
+            │   ├── common/
+            │   │   └── DeviceMonitor.ets  # 设备监控核心逻辑
+            │   ├── entryability/
+            │   │   └── EntryAbility.ets   # 应用入口
+            │   └── pages/
+            │       └── Index.ets        # 主界面UI和应用逻辑
+            └── module.json5
 ```
 
 ## 快速开始
@@ -97,12 +101,15 @@ OpenHarmony_Test_APP/
 ```bash
 # 1. 克隆项目
 git clone https://github.com/LaNasilDark/OpenHarmony_HeartBeat_Monitor
-cd OpenHarmony_Test_APP
+cd OpenHarmony_HeartBeat_Monitor
 
 # 2. 在 DevEco Studio 中打开项目
-# 3. 配置目标 IP 地址（在 Index.ets 中）
-TARGET_UDP_IP: "YOUR_SERVER_IP"
-TARGET_UDP_PORT: 9990
+# 3. 配置目标 IP 地址（在 entry/src/main/ets/pages/Index.ets 中）
+// 在文件顶部找到 monitorConfig 对象
+const monitorConfig: MonitorConfig = {
+  targetUdpIp: "YOUR_SERVER_IP", // 请替换为您的目标IP地址
+  // ... 其他配置
+};
 
 # 4. 编译并部署到设备
 ```
@@ -175,10 +182,16 @@ python udp_listener.py
 ### 网络配置
 
 ```typescript
-// OpenHarmony 应用配置 (Index.ets)
-const TARGET_UDP_IP: string = "10.0.90.241";    // 服务器 IP
-const TARGET_UDP_PORT: number = 9990;           // 服务器端口
-const LOCAL_UDP_PORT: number = 9991;            // 本地端口
+// OpenHarmony 应用配置 (entry/src/main/ets/pages/Index.ets)
+const monitorConfig: MonitorConfig = {
+  targetUdpIp: "10.0.90.241", // 目标IP地址
+  targetUdpPort: 9990,      // 目标端口
+  localUdpPort: 9991,       // 本地监听端口
+  agentVersion: '1.14514',  // 代理版本号
+  networkInterface: 'wlan0',// 监控的网络接口
+  diskMountPath: '/data',   // 监控的磁盘挂载点
+  collectInterval: 5000     // 采集间隔（毫秒）
+};
 ```
 
 ```python
@@ -190,44 +203,15 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 
 ### 数据格式
 
-设备信息以 JSON 格式通过 UDP 发送。数据包的前2个字节是基于消息体的校验和（大端序，unsigned short）。
+设备信息以 string 格式通过 UDP 发送。数据包的前2个字节是基于消息体的校验和（大端序，unsigned short）。
 
-**JSON 示例:**
+**示例:**
 
-```json
-{
-  "cpuLoad": "5.7",
-  "memInfo": {
-    "memTotal": 8123456,
-    "memLoad": 65,
-    "memUsed": 5280247,
-    "memAvailable": 2843209,
-    "unit": "Byte"
-  },
-  "disk": {
-    "mounted": "/data",
-    "available": 5432109876,
-    "total": 10987654321,
-    "percent": 50,
-    "used": 5555544445,
-    "unit": "Byte"
-  },
-  "net": {
-    "netInterface": "wlan0",
-    "txByte": 123456,
-    "txRate": 1024,
-    "rxByte": 789012,
-    "rxRate": 2048,
-    "unit": "Bytes/s"
-  },
-  "mac": "00:11:22:33:44:55",
-  "ipAddress": "10.0.90.100",
-  "upTime": "123456.78",
-  "time": "1718689815",
-  "sn": "1234567890ABCDEF",
-  "cpuTemperature": "45.2",
-  "agentVersion": "1.14514"
-}
+```string
+{'cpuLoad': '2.6', 'memInfo': {'memTotal': 8095608832, 'memLoad': 18.8, 'memUsed': 1521864704, 'memAvailable': 6573744128, 'unit': 'Byte'}, 'disk': {'mounted': 
+'/data', 'available': 4047802368, 'total': 4047802368, 'percent': 0, 'used': 0, 
+'unit': 'Byte'}, 'net': {'netInterface': 'wlan0', 'rxByte': 32983504, 'txByte': 
+464972, 'rxRate': 7912, 'txRate': 0, 'unit': 'Bytes/s'}, 'mac': '5c:8a:ae:67:5f:ab', 'ipAddress': '10.0.91.21', 'upTime': 0.05, 'time': 1750737593.1238554, 'sn': 'TGyREaXdrx1fhBek', 'cpuTemperature': 41, 'agentVersion': '1.14514'}
 ```
 
 ## API 文档
@@ -369,7 +353,7 @@ pip install psutil netifaces PyYAML
 
 ## 开发指南
 
-### 扩展功能
+### 扩展功能？
 
 1. 添加新的监控指标
 2. 实现数据持久化
@@ -381,6 +365,12 @@ pip install psutil netifaces PyYAML
 - 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.2.0 (2025-06-24)
+
+- ✨ **新增**: 将应用采集与发送的逻辑剥离 实现可复用与模块化
+- 🐛 **修复**: 优化了设备信息采集逻辑，提高了数据准确性和稳定性。
+- 📝 **更新**: 完善了 `README.md` 文档，包括更新项目结构、配置说明和功能列表。
 
 ### v1.1.0 (2025-06-18)
 

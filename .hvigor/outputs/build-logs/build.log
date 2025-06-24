@@ -13403,3 +13403,11 @@ Warning: 'C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\sr
 [2025-06-24T14:20:05.894] [DEBUG] debug-file - hvigor build process will be closed.
 [2025-06-24T14:20:05.894] [DEBUG] debug-file - Current worker pool is terminated.
 [2025-06-24T14:20:05.895] [DEBUG] debug-file - java daemon socket close code:1000 reason:close by user
+[2025-06-24T14:20:05.994] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-24T14:20:06.008] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-24T14:20:05.995] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-24T14:20:05.998] [DEBUG] debug-file - worker[0] exits with exit code 1.
+[2025-06-24T14:20:06.000] [DEBUG] debug-file - worker[1] exits with exit code 1.
+[2025-06-24T14:20:06.005] [DEBUG] debug-file - worker[14] exits with exit code 1.
+[2025-06-24T14:20:06.009] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-24T14:20:06.034] [DEBUG] debug-file - worker[4] exits with exit code 1.
