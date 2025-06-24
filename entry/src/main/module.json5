@@ -17,6 +17,16 @@
           when: "inuse",
         },
       },
+
+      {
+        name: "ohos.permission.RECEIVER_STARTUP_COMPLETED",
+        reason: "$string:reason_internet",
+        usedScene: {
+          abilities: ["EntryAbility"],
+          when: "always",
+        },
+      },
+
       {
         name: "ohos.permission.GET_RUNNING_INFO",
         reason: "$string:reason_running_info",
