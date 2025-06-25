@@ -35,6 +35,16 @@
           when: "inuse",
         },
       },
+
+      {
+        name: "ohos.permission.GET_BUNDLE_INFO",
+        reason: "$string:reason_running_info",
+        usedScene: {
+          abilities: ["EntryAbility"],
+          when: "inuse",
+        },
+      },
+
       {
         name: "ohos.permission.GET_WIFI_INFO",
         reason: "$string:reason_wifi_info",
@@ -80,6 +90,22 @@
       },
     ],
     extensionAbilities: [
+      {
+        name: "BootEventService",
+        srcEntry: "./ets/booteventservice/BootEventService.ets",
+        type: "staticSubscriber",
+        exported: true,
+        skills: [
+          {
+            "actions": [
+              "usual.event.BOOT_COMPLETED",
+              "usual.event.SCREEN_ON",
+              "COMMON_EVENT_BOOT_COMPLETED",
+              "COMMON_EVENT_LOCKED_BOOT_COMPLETED"
+            ]
+          }
+        ],
+      },
       {
         name: "EntryBackupAbility",
         srcEntry: "./ets/entrybackupability/EntryBackupAbility.ets",
