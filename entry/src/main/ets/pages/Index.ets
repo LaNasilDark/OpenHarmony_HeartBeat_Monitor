@@ -1,5 +1,8 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor, MonitorConfig, DeviceInfo } from '../common/DeviceMonitor';
+import bundleManager from '@ohos.bundle.bundleManager';
+import abilityAccessCtrl, { PermissionRequestResult, Permissions } from '@ohos.abilityAccessCtrl';
+
 
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
@@ -22,12 +25,67 @@ struct Index {
   @State serviceStatus: string = '服务未启动';
   @State isServiceRunning: boolean = false;
   @State runtimeLog: string = '应用日志:\n';
+  @State aplLevel: string = '未知';
+  @State bundleInfo: string = '获取中...';
   private monitor: DeviceMonitor = new DeviceMonitor(monitorConfig);
 
   public addLog(log: string): void {
     const now = new Date();
     const timestamp = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
     this.runtimeLog += `[${timestamp}] ${log}\n`;
+  }
+
+  private async checkAplLevel(): Promise<void> {
+    try {
+      // 获取当前应用的包名
+      const context = getContext(this);
+      const bundleName = context.applicationInfo.name;
+      
+      // 查询应用信息
+      const applicationInfo = await bundleManager.getApplicationInfo(bundleName, 
+        bundleManager.ApplicationFlag.GET_APPLICATION_INFO_DEFAULT);
+      this.addLog(`查询应用信息成功: ${JSON.stringify(applicationInfo)}`);
+      //hilog.info(DOMAIN, TAG, `查询应用信息成功: ${JSON.stringify(applicationInfo)}`);
+      // APL级别映射
+      const aplLevelMap: Map<string, string> = new Map([
+        ['1', 'normal (普通应用)'],
+        ['2', 'system_basic (基础系统应用)'],
+        ['3', 'system_core (核心系统应用)']
+      ]);
+      
+      this.aplLevel = aplLevelMap.get(applicationInfo.appProvisionType.toString()) || `未知级别(${applicationInfo.appProvisionType})`;
+      this.bundleInfo = `包名: ${bundleName}\nAPL级别: ${this.aplLevel}`;
+      
+      this.addLog(`当前应用APL级别: ${this.aplLevel}`);
+      
+      // 检查关键权限是否被授予
+      await this.checkCriticalPermissions();
+      
+    } catch (error) {
+      const errorMsg = `查询APL级别失败: ${JSON.stringify(error)}`;
+      this.addLog(errorMsg);
+      hilog.error(DOMAIN, TAG, errorMsg);
+    }
+  }
+
+  // 检查关键权限状态
+  private async checkCriticalPermissions(): Promise<void> {
+    const criticalPermissions: Array<Permissions> = [
+      'ohos.permission.RECEIVER_STARTUP_COMPLETED',
+      'ohos.permission.MANAGE_APP_BOOT'
+    ];
+    const atManager = abilityAccessCtrl.createAtManager();
+
+    for (const permission of criticalPermissions) {
+      try {
+        const context = getContext(this);
+        const result: PermissionRequestResult = await atManager.requestPermissionsFromUser(context, [permission]);
+        // 注意：系统级权限通常不能通过用户授权获得，这里主要是检查状态
+        this.addLog(`权限 ${permission}: ${result.authResults[0] === 0 ? '已授予' : '未授予'}`);
+      } catch (error) {
+        this.addLog(`检查权限 ${permission} 失败: ${JSON.stringify(error)}`);
+      }
+    }
   }
 
   build() {
@@ -65,6 +123,19 @@ struct Index {
         .textAlign(TextAlign.Start)
         .width('90%')
 
+      Text(this.bundleInfo)
+        .fontSize(14)
+        .fontColor(Color.Blue)
+        .textAlign(TextAlign.Center)
+        .margin({ top: 10 })
+
+      Button('检查APL级别')
+        .width(150)
+        .height(40)
+        .backgroundColor(Color.Orange)
+        .onClick(() => {
+          this.checkAplLevel();
+        })
       // 新增日志显示区域
       Scroll() {
         Text(this.runtimeLog)
