@@ -372,7 +372,7 @@ export class DeviceMonitor {
   }
 
   // 获取系统运行时间
-  private async fetchUptimeFromProcUptime(): Promise<number | null> {
+  private async fetchUptime(): Promise<number | null> {
     try {
       
       const uptimeSeconds = process.uptime();
@@ -383,7 +383,7 @@ export class DeviceMonitor {
       
       return null;
     } catch (e) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Exception in fetchUptimeFromProcUptime: ${JSON.stringify(e)}`);
+      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Exception in fetchUptime: ${JSON.stringify(e)}`);
       return null;
     }
   }
@@ -464,7 +464,7 @@ export class DeviceMonitor {
         this.fetchMacAddress(),
         this.fetchSN(),
         this.fetchSystemTime(),
-        this.fetchUptimeFromProcUptime(),
+        this.fetchUptime(),
         this.fetchLocalIp(),
         this.getCpuPercent(),
         this.fetchMemInfo(),
