@@ -4,13 +4,13 @@
       {
         "name": "default",
         "material": {
-          "certpath": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.cer",
+          "certpath": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_HeartBeat_Monitor_ex5BV-prOc32sRt1bVle560tyGwTNfe8R0LzRl2KYDs=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B3FE06C9441BCDCB66FF31A4B1E4750E1A46A2961EE7148EE8A779106BF4A97A64DEC38898FC7FA",
-          "profile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p7b",
+          "keyPassword": "0000001B21E8C30DBFA32F84F0B6CF92AC52017211D89FF783E00BD7C862CAFCC08D72A6804338FDF9C093",
+          "profile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_HeartBeat_Monitor_ex5BV-prOc32sRt1bVle560tyGwTNfe8R0LzRl2KYDs=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_Test_APP_ZXy8Md8HPhswqm_ZMW6SHTWqFlkSDGC64omjiwjIaF4=.p12",
-          "storePassword": "0000001BB62C5BABE5BA437FB4100AE591DC2A27DCA180544FDFD3F2D590AB6772EC395958C5F691183D01"
+          "storeFile": "C:/Users/xingqiliang.DC/.ohos/config/openharmony/default_OpenHarmony_HeartBeat_Monitor_ex5BV-prOc32sRt1bVle560tyGwTNfe8R0LzRl2KYDs=.p12",
+          "storePassword": "0000001B83F328342745A8AD82834D1A1D9AD6BBFF1D468588D6B0D7B7F49C2F4EB4AE3C3BD60D1FD056DA"
         }
       }
     ],

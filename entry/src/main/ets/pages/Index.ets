@@ -1,5 +1,12 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor, MonitorConfig, DeviceInfo } from '../common/DeviceMonitor';
+import ethernet from '@ohos.net.ethernet';
+import { BusinessError } from '@ohos.base';
+import connection from '@ohos.net.connection';
+import fs from '@ohos.file.fs';
+import common from '@ohos.app.ability.common';
+import { process } from '@kit.ArkTS';
+
 
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
@@ -53,6 +60,21 @@ struct Index {
             this.startMonitorService();
           }
         })
+      Button('读取Wi-Fi配置')
+        .width(200)
+        .height(50)
+        .margin({ top: 10 })
+        .onClick(() => {
+          this.readWifiConfig();
+        })
+
+      Button('获取沙盒路径')
+        .width(200)
+        .height(50)
+        .margin({ top: 10 })
+        .onClick(() => {
+          this.getSandboxPath();
+        })  
 
       Text('功能说明：')
         .fontSize(18)
@@ -88,11 +110,91 @@ struct Index {
     .justifyContent(FlexAlign.Center)
   }
 
+  private getSandboxPath(): void {
+    try {
+      const context = getContext(this) as common.UIAbilityContext;
+      this.addLog('获取应用沙盒路径成功:');
+      this.addLog(`  - Cache Dir: ${context.cacheDir}`);
+      this.addLog(`  - Files Dir: ${context.filesDir}`);
+      if (context.distributedFilesDir) {
+        this.addLog(`  - Distributed Files Dir: ${context.distributedFilesDir}`);
+      }
+    } catch (error) {
+      const err = error as BusinessError;
+      const errorMsg = `获取沙盒路径失败: ${JSON.stringify(err)}`;
+      hilog.error(DOMAIN, TAG, errorMsg);
+      this.addLog(errorMsg);
+    }
+  }
+
+  private async readWifiConfig(): Promise<void> {
+    const filePath = '/data/service/el1/public/wifi/device_config.conf';
+    this.addLog(`尝试读取配置文件: ${filePath}`);
+    try {
+      // 检查文件是否存在
+      const isExist = await fs.access(filePath);
+      if (!isExist) {
+        this.addLog(`文件不存在: ${filePath}`);
+        hilog.error(DOMAIN, TAG, `File not found: ${filePath}`);
+        return;
+      }
+
+      // 读取文件内容
+      const content = await fs.readText(filePath);
+      this.addLog('成功读取Wi-Fi配置文件内容:');
+      this.addLog(content);
+      hilog.info(DOMAIN, TAG, `Successfully read wifi config.`);
+
+    } catch (error) {
+      const err = error as BusinessError;
+      const errorMsg = `读取文件失败: ${JSON.stringify(err)}`;
+      hilog.error(DOMAIN, TAG, errorMsg);
+      this.addLog(errorMsg);
+      this.addLog('请检查应用是否具有读取该文件的权限。此路径可能需要系统应用权限。');
+    }
+  }
+
   private async startMonitorService(): Promise<void> {
     try {
       const startMsg = 'Starting monitor service...';
       hilog.info(DOMAIN, TAG, startMsg);
       this.addLog(startMsg);
+
+      // 1. 动态获取网络接口
+      let defaultNet = await connection.getDefaultNet();
+      if (!defaultNet) {
+        this.addLog('获取默认网络失败，请检查网络连接');
+        hilog.error(DOMAIN, TAG, 'Failed to get default net');
+        this.serviceStatus = '启动服务失败';
+        return;
+      }
+      let connProperties = await connection.getConnectionProperties(defaultNet);
+      const ifaceName = connProperties.interfaceName;
+      this.addLog(`获取到活动网络接口: ${ifaceName}`);
+
+      // 2. 使用获取到的接口名称进行配置
+      let InterfaceConfiguration: ethernet.InterfaceConfiguration = {
+        mode: ethernet.IPSetMode.STATIC,
+        ipAddr: "10.0.90.248",
+        route: "10.0.71.254",
+        gateway: "10.0.71.254",
+        netMask: "255.255.254.0",
+        dnsServers: "8.8.8.8",
+      }
+
+      try {
+        await ethernet.setIfaceConfig(ifaceName, InterfaceConfiguration)
+        hilog.info(DOMAIN,TAG, `设置${ifaceName}接口配置成功: ${JSON.stringify(InterfaceConfiguration)}`);
+        this.addLog(`设置${ifaceName}接口配置成功: ${JSON.stringify(InterfaceConfiguration)}`);
+      } catch (error) {
+        const err = error as BusinessError;
+        hilog.error(DOMAIN, TAG, `设置${ifaceName}接口配置失败: ${JSON.stringify(err)}`);
+        this.addLog(`设置${ifaceName}接口配置失败: ${JSON.stringify(err)}`);
+        // 如果设置IP失败，可以选择是否要继续执行
+        // this.serviceStatus = '启动服务失败';
+        // return;
+      }
+
 
       // 收集一次设备信息并日志展示
       const info: DeviceInfo = await this.monitor.collectDeviceInfo();

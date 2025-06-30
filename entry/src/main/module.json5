@@ -18,8 +18,20 @@
         },
       },
 
+      
+
+
       {
         name: "ohos.permission.RECEIVER_STARTUP_COMPLETED",
+        reason: "$string:reason_internet",
+        usedScene: {
+          abilities: ["EntryAbility"],
+          when: "always",
+        },
+      },
+
+      {
+        name: "ohos.permission.CONNECTIVITY_INTERNAL",
         reason: "$string:reason_internet",
         usedScene: {
           abilities: ["EntryAbility"],

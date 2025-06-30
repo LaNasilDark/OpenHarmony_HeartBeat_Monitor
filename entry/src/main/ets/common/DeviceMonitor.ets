@@ -5,6 +5,8 @@ import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
 import fs from '@ohos.file.fs';
 import { statfs } from '@kit.CoreFileKit';
+import ethernet from '@ohos.net.ethernet';
+import { process } from '@kit.ArkTS';
 
 // 接口定义
 export interface DeviceInfo {
@@ -372,19 +374,13 @@ export class DeviceMonitor {
   // 获取系统运行时间
   private async fetchUptimeFromProcUptime(): Promise<number | null> {
     try {
-      const content = await this.readSystemFileContent("/proc/uptime");
-      if (content === 'N/A' || !content) {
-        return null;
+      
+      const uptimeSeconds = process.uptime();
+      if (!isNaN(uptimeSeconds)) {
+        const upTimeDays = uptimeSeconds / 86400;
+        return Number(upTimeDays.toFixed(2));
       }
-
-      const parts = content.split(/\s+/);
-      if (parts.length >= 1) {
-        const uptimeSeconds = parseFloat(parts[0]);
-        if (!isNaN(uptimeSeconds)) {
-          const upTimeDays = uptimeSeconds / 86400;
-          return Number(upTimeDays.toFixed(2));
-        }
-      }
+      
       return null;
     } catch (e) {
       hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Exception in fetchUptimeFromProcUptime: ${JSON.stringify(e)}`);
