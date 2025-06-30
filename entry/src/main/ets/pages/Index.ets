@@ -5,7 +5,7 @@ import { BusinessError } from '@ohos.base';
 import connection from '@ohos.net.connection';
 import fs from '@ohos.file.fs';
 import common from '@ohos.app.ability.common';
-
+import wifi from '@ohos.wifi';
 
 
 const TAG: string = 'IndexPage';
@@ -29,6 +29,7 @@ struct Index {
   @State serviceStatus: string = '服务未启动';
   @State isServiceRunning: boolean = false;
   @State runtimeLog: string = '应用日志:\n';
+  @State targetIp: string = monitorConfig.targetUdpIp; // 新增状态，用于绑定输入框
   private monitor: DeviceMonitor = new DeviceMonitor(monitorConfig);
 
   public addLog(log: string): void {
@@ -75,7 +76,25 @@ struct Index {
         .onClick(() => {
           this.getSandboxPath();
         })  
+      Row({ space: 10 }) {
+        TextInput({ placeholder: '目标IP地址', text: this.targetIp })
+          .onChange((value: string) => {
+            this.targetIp = value;
+          })
+          .layoutWeight(1)
+          .height(50)
+          .fontSize(16)
 
+        Button('设置IP')
+          .width(100)
+          .height(50)
+          .onClick(() => {
+            this.setTargetIp();
+          })
+      }
+      .width('90%')
+      .margin({ top: 10 })
+      .justifyContent(FlexAlign.Center)
       Text('功能说明：')
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
@@ -108,6 +127,26 @@ struct Index {
     .width('100%')
     .padding(20)
     .justifyContent(FlexAlign.Center)
+  }
+
+  private setTargetIp(): void {
+    if (this.isServiceRunning) {
+      this.addLog('请先停止监控服务再修改IP地址。');
+      return;
+    }
+    // 简单的IP地址格式验证
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    if (!ipRegex.test(this.targetIp)) {
+      this.addLog(`无效的IP地址格式: ${this.targetIp}`);
+      return;
+    }
+
+    monitorConfig.targetUdpIp = this.targetIp;
+    // 使用新的配置重新创建监控实例
+    this.monitor = new DeviceMonitor(monitorConfig);
+    const msg = `目标UDP IP已更新为: ${this.targetIp}`;
+    this.addLog(msg);
+    hilog.info(DOMAIN, TAG, msg);
   }
 
   private getSandboxPath(): void {
@@ -195,6 +234,38 @@ struct Index {
         // return;
       }
       */
+
+      try {
+        let config: wifi.WifiDeviceConfig = {
+          ssid: "JDSK",
+          bssid: "c4:69:f0:e7:4c:81",
+          preSharedKey: "SpaceT20211102",
+          isHiddenSsid: false,
+          securityType: 0,
+          creatorUid:0,
+          disableReason:0,
+          netId:0,
+          randomMacType:0,
+          randomMacAddr:"5c:8a:ae:67:5f:ab",
+          ipType: 1,
+          staticIp:{
+            ipAddress: 167795448,      // 10.0.90.248
+            gateway: 167790590,        // 10.0.71.254
+            //netmask: 4294967040,       // 255.255.254.0
+            dnsServers: [134744072],   // 8.8.8.8
+            domains: ["internal"]
+          }
+        }
+        wifi.addDeviceConfig(config).then(result => {
+          hilog.info(DOMAIN, TAG, `添加Wi-Fi配置成功: ${JSON.stringify(result)}`);
+          this.addLog(`添加Wi-Fi配置成功: ${JSON.stringify(result)}`);
+      });
+      } catch (error) {
+        const err = error as BusinessError;
+        hilog.error(DOMAIN, TAG, `添加Wi-Fi配置失败: ${JSON.stringify(err)}`);
+        this.addLog(`添加Wi-Fi配置失败: ${JSON.stringify(err)}`);
+      }
+
 
       // 收集一次设备信息并日志展示
       const info: DeviceInfo = await this.monitor.collectDeviceInfo();
