@@ -5744,3 +5744,31 @@ RollupError: Unexpected token (Note that you need plugins to import files that a
 [2025-06-30T16:35:56.509] [DEBUG] debug-file - Update task entry:default@CollectDebugSymbol input file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\intermediates\libs\default cache by regenerate.
 [2025-06-30T16:35:56.509] [DEBUG] debug-file - Update task entry:default@CollectDebugSymbol output file:C:\Users\xingqiliang.DC\Desktop\OpenHarmony_HeartBeat_Monitor\entry\build\default\outputs\default\symbol cache.
 [2025-06-30T16:35:56.509] [DEBUG] debug-file - Incremental task entry:default@CollectDebugSymbol post-execution cost:2 ms .
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current worker pool is stopped or closed.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Clear worker 0.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Worker 0 has been cleared.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current idle worker size: 3.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Clear worker 1.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Worker 1 has been cleared.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current idle worker size: 2.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Clear worker 4.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Worker 4 has been cleared.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current idle worker size: 1.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Clear worker 14.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Worker 14 has been cleared.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current idle worker size: 0.
+[2025-06-30T16:35:56.549] [DEBUG] debug-file - Current busy worker size: 0.
+[2025-06-30T16:35:56.550] [DEBUG] debug-file - hvigor build process will be closed.
+[2025-06-30T16:35:56.550] [DEBUG] debug-file - Current worker pool is terminated.
+[2025-06-30T16:35:56.550] [DEBUG] debug-file - java daemon socket close code:1000 reason:close by user
+[2025-06-30T16:35:56.601] [DEBUG] debug-file - worker[1] exits with exit code 1.
+[2025-06-30T16:35:56.605] [DEBUG] debug-file - worker[0] exits with exit code 1.
+[2025-06-30T16:35:56.615] [DEBUG] debug-file - worker[14] exits with exit code 1.
+[2025-06-30T16:35:56.645] [DEBUG] debug-file - worker[4] exits with exit code 1.
+[2025-06-30T16:35:56.707] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-30T16:35:56.731] [DEBUG] debug-file - session manager: send message to worker process.
+[2025-06-30T16:35:56.707] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
+[2025-06-30T16:35:56.731] [DEBUG] debug-file - watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.
