@@ -5,7 +5,7 @@ import { BusinessError } from '@ohos.base';
 import connection from '@ohos.net.connection';
 import fs from '@ohos.file.fs';
 import common from '@ohos.app.ability.common';
-import { process } from '@kit.ArkTS';
+
 
 
 const TAG: string = 'IndexPage';
@@ -159,7 +159,7 @@ struct Index {
       const startMsg = 'Starting monitor service...';
       hilog.info(DOMAIN, TAG, startMsg);
       this.addLog(startMsg);
-
+      /*
       // 1. 动态获取网络接口
       let defaultNet = await connection.getDefaultNet();
       if (!defaultNet) {
@@ -194,7 +194,7 @@ struct Index {
         // this.serviceStatus = '启动服务失败';
         // return;
       }
-
+      */
 
       // 收集一次设备信息并日志展示
       const info: DeviceInfo = await this.monitor.collectDeviceInfo();
