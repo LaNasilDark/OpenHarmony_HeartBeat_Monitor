@@ -1,6 +1,7 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor, MonitorConfig, DeviceInfo } from '../common/DeviceMonitor';
-import wifi from '@ohos.wifiManager';
+//import wifi from '@ohos.wifiManager';
+import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
 //import connection from '@ohos.net.connection';
 //import fs from '@ohos.file.fs';
@@ -13,7 +14,7 @@ const DOMAIN: number = 0x0001;
 
 // 监控配置
 const monitorConfig: MonitorConfig = {
-  targetUdpIp: "10.0.90.241", // 请替换为您的目标IP地址
+  targetUdpIp: "10.0.90.203", // 请替换为您的目标IP地址
   targetUdpPort: 9990,
   localUdpPort: 9991,
   agentVersion: '1.14514',
@@ -248,21 +249,37 @@ struct Index {
       this.addLog(errorMsg);
       return; // 如果无法启动Wi-Fi，则中止后续操作
     }
-    await sleep(500);
+    await sleep(1000);
     this.addLog('开始配置Wi-Fi网络...');
 
     try {
       // 使用简化的配置对象（参考示例代码的做法）
-      let deviceConfig: wifi.WifiDeviceConfig = {
+      /*let deviceConfig: wifi.WifiDeviceConfig = {
         ssid: "JDSK",
         bssid: "c4:69:f0:e7:4c:81",
         preSharedKey: "SpaceT20211102",
         isHiddenSsid: false,
         securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK // 使用枚举值
-        
-
+      */
+      let deviceConfig:wifi.WifiDeviceConfig ={
+        ssid:"JDSK",
+        bssid:"c4:69:f0:e7:4c:81",
+        preSharedKey: "SpaceT20211102",
+        isHiddenSsid: false,
+        securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK,
+        creatorUid: 0,
+        disableReason: 0,
+        netId:0,
+        randomMacType:0,
+        randomMacAddr:"5c.8a.ae.67.5f.ab",
+        ipType: wifi.IpType.STATIC,
+        staticIp:{
+          ipAddress:167795448,
+          gateway:167795454,
+          dnsServers: [167778834],
+          domains:["dc.com"]
+        }
       };
-
       // 先添加配置
       const configResult = await wifi.addDeviceConfig(deviceConfig);
       this.addLog(`添加Wi-Fi配置成功,网络ID: ${configResult}`);
