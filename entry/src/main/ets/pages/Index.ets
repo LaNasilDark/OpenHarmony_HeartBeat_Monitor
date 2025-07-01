@@ -1,11 +1,11 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor, MonitorConfig, DeviceInfo } from '../common/DeviceMonitor';
-import ethernet from '@ohos.net.ethernet';
-import { BusinessError } from '@ohos.base';
-import connection from '@ohos.net.connection';
-import fs from '@ohos.file.fs';
-import common from '@ohos.app.ability.common';
 import wifi from '@ohos.wifiManager';
+import { BusinessError } from '@ohos.base';
+//import connection from '@ohos.net.connection';
+//import fs from '@ohos.file.fs';
+//import common from '@ohos.app.ability.common';
+//import ethernet from '@ohos.net.ethernet';
 
 
 const TAG: string = 'IndexPage';
@@ -62,13 +62,13 @@ struct Index {
             this.startMonitorService();
           }
         })
-      Button('读取Wi-Fi配置')
+      /*Button('读取Wi-Fi配置')
         .width(200)
         .height(50)
         .margin({ top: 10 })
         .onClick(() => {
           this.readWifiConfig();
-        })
+        })*/
 
        Button('配置Wi-Fi网络')
         .width(200)
@@ -78,13 +78,13 @@ struct Index {
           this.configureWifi();
         })
 
-      Button('获取沙盒路径')
+      /*Button('获取沙盒路径')
         .width(200)
         .height(50)
         .margin({ top: 10 })
         .onClick(() => {
           this.getSandboxPath();
-        })  
+        })*/  
       Row({ space: 10 }) {
         TextInput({ placeholder: '目标IP地址', text: this.targetIp })
           .onChange((value: string) => {
@@ -104,16 +104,7 @@ struct Index {
       .width('90%')
       .margin({ top: 10 })
       .justifyContent(FlexAlign.Center)
-      Text('功能说明：')
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .margin({ top: 20 }) // 调整边距
-
-      Text('• 后台监控设备网络状态\n• 定期广播设备信息\n• 收集网络接口数据\n• 简化版Python监控脚本功能')
-        .fontSize(14)
-        .fontColor(Color.Gray)
-        .textAlign(TextAlign.Start)
-        .width('90%')
+     
 
       // 新增日志显示区域
       Scroll() {
@@ -158,7 +149,7 @@ struct Index {
     hilog.info(DOMAIN, TAG, msg);
   }
 
-  private getSandboxPath(): void {
+  /*private getSandboxPath(): void {
     try {
       const context = getContext(this) as common.UIAbilityContext;
       this.addLog('获取应用沙盒路径成功:');
@@ -200,7 +191,7 @@ struct Index {
       this.addLog(errorMsg);
       this.addLog('请检查应用是否具有读取该文件的权限。此路径可能需要系统应用权限。');
     }
-  }
+  }*/
 
   private async startMonitorService(): Promise<void> {
     try {
@@ -239,7 +230,27 @@ struct Index {
   }
 
   private async configureWifi(): Promise<void> {
+
+     try {
+      // 检查Wi-Fi是否已激活
+      if (!wifi.isWifiActive()) {
+        this.addLog('Wi-Fi 未激活，正在尝试启动...');
+        await wifi.enableWifi();
+        
+        this.addLog('Wi-Fi 已成功启动。');
+      } else {
+        this.addLog('Wi-Fi 已处于激活状态。');
+      }
+    } catch (error) {
+      const err = error as BusinessError;
+      const errorMsg = `启动Wi-Fi失败: ${JSON.stringify(err)}`;
+      hilog.error(DOMAIN, TAG, errorMsg);
+      this.addLog(errorMsg);
+      return; // 如果无法启动Wi-Fi，则中止后续操作
+    }
+    await sleep(500);
     this.addLog('开始配置Wi-Fi网络...');
+
     try {
       // 使用简化的配置对象（参考示例代码的做法）
       let deviceConfig: wifi.WifiDeviceConfig = {
@@ -287,4 +298,8 @@ struct Index {
       this.serviceStatus = '停止服务失败';
     }
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

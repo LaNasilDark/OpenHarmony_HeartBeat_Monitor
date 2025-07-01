@@ -141,7 +141,7 @@ async def run_command(command, callback=None):
     )
     stdout = ''
     while True:
-        output = await process.stdout.readline()
+        output = await process.stdout.readline() # type: ignore
         if not output:
             break
         if callback is not None:
@@ -441,7 +441,7 @@ async def find_connectable_nics():
     :return: 列表，包含可以联网的网卡名
     """
     nets = await run_command_with_timeout(cat_interface_cmd)
-    nic_ips = nets.strip().split('\n')
+    nic_ips = nets.strip().split('\n') # type: ignore
     return nic_ips
 
 async def run_main():
