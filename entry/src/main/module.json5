@@ -18,9 +18,6 @@
         },
       },
 
-      
-
-
       {
         name: "ohos.permission.RECEIVER_STARTUP_COMPLETED",
         reason: "$string:reason_internet",
@@ -47,15 +44,116 @@
           when: "inuse",
         },
       },
+
       {
-        name: "ohos.permission.GET_WIFI_INFO",
-        reason: "$string:reason_wifi_info",
-        usedScene: {
-          abilities: ["EntryAbility"],
-          when: "inuse",
+        "name": "ohos.permission.GET_WIFI_INFO",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
         },
       },
-
+      {
+        "name": "ohos.permission.SET_WIFI_INFO",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.LOCATION",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.APPROXIMATELY_LOCATION",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }},
+      {
+        "name": "ohos.permission.GET_WIFI_INFO_INTERNAL",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.GET_WIFI_PEERS_MAC",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.GET_WIFI_LOCAL_MAC",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.GET_WIFI_CONFIG",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.SET_WIFI_CONFIG",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MANAGE_WIFI_CONNECTION",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MANAGE_WIFI_HOTSPOT",
+        "reason": "$string:reason_internet",
+        "usedScene": {
+          "abilities": [
+            "MainAbility"
+          ],
+          "when": "inuse"
+        }
+      },
       {
         name: "ohos.permission.GET_NETWORK_INFO",
         reason: "$string:reason_network_info",

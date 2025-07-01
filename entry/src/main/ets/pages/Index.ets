@@ -5,7 +5,7 @@ import { BusinessError } from '@ohos.base';
 import connection from '@ohos.net.connection';
 import fs from '@ohos.file.fs';
 import common from '@ohos.app.ability.common';
-import wifi from '@ohos.wifi';
+import wifi from '@ohos.wifiManager';
 
 
 const TAG: string = 'IndexPage';
@@ -21,6 +21,7 @@ const monitorConfig: MonitorConfig = {
   diskMountPath: '/data',
   collectInterval: 5000 // 5秒
 };
+
 
 @Entry
 @Component
@@ -69,6 +70,14 @@ struct Index {
           this.readWifiConfig();
         })
 
+       Button('配置Wi-Fi网络')
+        .width(200)
+        .height(50)
+        .margin({ top: 10 })
+        .onClick(() => {
+          this.configureWifi();
+        })
+
       Button('获取沙盒路径')
         .width(200)
         .height(50)
@@ -85,7 +94,7 @@ struct Index {
           .height(50)
           .fontSize(16)
 
-        Button('设置IP')
+        Button('设置UDP目标IP')
           .width(100)
           .height(50)
           .onClick(() => {
@@ -198,74 +207,6 @@ struct Index {
       const startMsg = 'Starting monitor service...';
       hilog.info(DOMAIN, TAG, startMsg);
       this.addLog(startMsg);
-      /*
-      // 1. 动态获取网络接口
-      let defaultNet = await connection.getDefaultNet();
-      if (!defaultNet) {
-        this.addLog('获取默认网络失败，请检查网络连接');
-        hilog.error(DOMAIN, TAG, 'Failed to get default net');
-        this.serviceStatus = '启动服务失败';
-        return;
-      }
-      let connProperties = await connection.getConnectionProperties(defaultNet);
-      const ifaceName = connProperties.interfaceName;
-      this.addLog(`获取到活动网络接口: ${ifaceName}`);
-
-      // 2. 使用获取到的接口名称进行配置
-      let InterfaceConfiguration: ethernet.InterfaceConfiguration = {
-        mode: ethernet.IPSetMode.STATIC,
-        ipAddr: "10.0.90.248",
-        route: "10.0.71.254",
-        gateway: "10.0.71.254",
-        netMask: "255.255.254.0",
-        dnsServers: "8.8.8.8",
-      }
-
-      try {
-        await ethernet.setIfaceConfig(ifaceName, InterfaceConfiguration)
-        hilog.info(DOMAIN,TAG, `设置${ifaceName}接口配置成功: ${JSON.stringify(InterfaceConfiguration)}`);
-        this.addLog(`设置${ifaceName}接口配置成功: ${JSON.stringify(InterfaceConfiguration)}`);
-      } catch (error) {
-        const err = error as BusinessError;
-        hilog.error(DOMAIN, TAG, `设置${ifaceName}接口配置失败: ${JSON.stringify(err)}`);
-        this.addLog(`设置${ifaceName}接口配置失败: ${JSON.stringify(err)}`);
-        // 如果设置IP失败，可以选择是否要继续执行
-        // this.serviceStatus = '启动服务失败';
-        // return;
-      }
-      */
-
-      try {
-        let config: wifi.WifiDeviceConfig = {
-          ssid: "JDSK",
-          bssid: "c4:69:f0:e7:4c:81",
-          preSharedKey: "SpaceT20211102",
-          isHiddenSsid: false,
-          securityType: 0,
-          creatorUid:0,
-          disableReason:0,
-          netId:0,
-          randomMacType:0,
-          randomMacAddr:"5c:8a:ae:67:5f:ab",
-          ipType: 1,
-          staticIp:{
-            ipAddress: 167795448,      // 10.0.90.248
-            gateway: 167790590,        // 10.0.71.254
-            //netmask: 4294967040,       // 255.255.254.0
-            dnsServers: [134744072],   // 8.8.8.8
-            domains: ["internal"]
-          }
-        }
-        wifi.addDeviceConfig(config).then(result => {
-          hilog.info(DOMAIN, TAG, `添加Wi-Fi配置成功: ${JSON.stringify(result)}`);
-          this.addLog(`添加Wi-Fi配置成功: ${JSON.stringify(result)}`);
-      });
-      } catch (error) {
-        const err = error as BusinessError;
-        hilog.error(DOMAIN, TAG, `添加Wi-Fi配置失败: ${JSON.stringify(err)}`);
-        this.addLog(`添加Wi-Fi配置失败: ${JSON.stringify(err)}`);
-      }
-
 
       // 收集一次设备信息并日志展示
       const info: DeviceInfo = await this.monitor.collectDeviceInfo();
@@ -294,6 +235,34 @@ struct Index {
       hilog.error(DOMAIN, TAG, errorMsg);
       this.addLog(errorMsg);
       this.serviceStatus = '启动服务失败';
+    }
+  }
+
+  private async configureWifi(): Promise<void> {
+    this.addLog('开始配置Wi-Fi网络...');
+    try {
+      // 使用简化的配置对象（参考示例代码的做法）
+      let deviceConfig: wifi.WifiDeviceConfig = {
+        ssid: "JDSK",
+        bssid: "c4:69:f0:e7:4c:81",
+        preSharedKey: "SpaceT20211102",
+        isHiddenSsid: false,
+        securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK // 使用枚举值
+      };
+
+      // 先添加配置
+      const configResult = await wifi.addDeviceConfig(deviceConfig);
+      this.addLog(`添加Wi-Fi配置成功,网络ID: ${configResult}`);
+
+      // 然后尝试连接
+      await wifi.connectToDevice(deviceConfig);
+      this.addLog(`连接指令已发送到网络: ${deviceConfig.ssid}`);
+
+    } catch (error) {
+      const err = error as BusinessError;
+      hilog.error(DOMAIN, TAG, `Wi-Fi配置失败: ${JSON.stringify(err)}`);
+      this.addLog(`Wi-Fi配置失败: ${JSON.stringify(err)}`);
+      this.addLog('请检查应用权限及参数。');
     }
   }
 
