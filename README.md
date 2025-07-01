@@ -45,6 +45,8 @@ OpenHarmony 设备          网络          监控服务器
   - 服务启动/停止控制
   - 实时日志显示
   - 状态指示器
+  - 动态设置UDP目标IP
+  - Wi-Fi配置与连接
 
 ### Python 服务器端
 
@@ -104,14 +106,9 @@ git clone https://github.com/LaNasilDark/OpenHarmony_HeartBeat_Monitor
 cd OpenHarmony_HeartBeat_Monitor
 
 # 2. 在 DevEco Studio 中打开项目
-# 3. 配置目标 IP 地址（在 entry/src/main/ets/pages/Index.ets 中）
-// 在文件顶部找到 monitorConfig 对象
-const monitorConfig: MonitorConfig = {
-  targetUdpIp: "YOUR_SERVER_IP", // 请替换为您的目标IP地址
-  // ... 其他配置
-};
-
+# 3. （可选）在 entry/src/main/ets/pages/Index.ets 中修改默认目标IP
 # 4. 编译并部署到设备
+# 5. （可选）在应用界面中动态设置目标服务器IP地址
 ```
 
 ### 2.修改设备启动配置文件
@@ -184,7 +181,7 @@ python udp_listener.py
 ```typescript
 // OpenHarmony 应用配置 (entry/src/main/ets/pages/Index.ets)
 const monitorConfig: MonitorConfig = {
-  targetUdpIp: "10.0.90.241", // 目标IP地址
+  targetUdpIp: "10.0.90.241", // 目标IP地址（可在应用内动态修改）
   targetUdpPort: 9990,      // 目标端口
   localUdpPort: 9991,       // 本地监听端口
   agentVersion: '1.14514',  // 代理版本号
@@ -232,6 +229,8 @@ async function fetchSystemTime(): Promise<string>
 async function fetchCpuTemperature(): Promise<string>
 async function fetchSN(): Promise<string>
 async function readSystemFileContent(filePath: string): Promise<string>
+async function configureWifi(): Promise<void>
+async function readWifiConfig(): Promise<void>
 
 // UDP 通信
 async function sendDeviceInfoViaUDP(): Promise<void>
@@ -287,6 +286,10 @@ device_info = {
     'hostname': 'openharmony-device'
 }
 response = send_udp_broadcast(device_info)
+
+### 应用内配置IP
+
+在应用启动后，可以直接在输入框中修改目标服务器的IP地址，并点击“设置UDP目标IP”按钮来更新配置。
 ```
 
 ## 故障排除
@@ -356,13 +359,21 @@ pip install psutil netifaces PyYAML
 ### 扩展功能开发计划
 
 1. ohos系统内的自启动功能
-2. 修改设备静态IP以实现配网功能
+2. ~~修改设备静态IP以实现配网功能~~ (已通过Wi-Fi配置API实现)
+3. 远程固件升级（FOTA）
 
 ## 技术支持(真的会有吗？)
 
 - 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.3.0 (2025-07-01)
+
+- ✨ **新增**: 在应用UI中增加了动态配置目标服务器IP的功能。
+- ✨ **新增**: 增加了读取设备Wi-Fi配置和通过API进行Wi-Fi配网的功能。
+- ✨ **新增**: 增加了获取应用沙盒路径的功能，方便调试。
+- 📝 **更新**: 更新了 `README.md` 以反映最新的UI功能和API变化。
 
 ### v1.2.0 (2025-06-24)
 
