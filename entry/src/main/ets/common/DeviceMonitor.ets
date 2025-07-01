@@ -4,9 +4,10 @@ import wifiManager from '@ohos.wifiManager';
 import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
 import fs from '@ohos.file.fs';
-import { statfs } from '@kit.CoreFileKit';
-import ethernet from '@ohos.net.ethernet';
+//import { statfs } from '@kit.CoreFileKit';
+//import ethernet from '@ohos.net.ethernet';
 import { process } from '@kit.ArkTS';
+import storageStatistics from '@ohos.file.storageStatistics'
 
 // 接口定义
 export interface DeviceInfo {
@@ -270,13 +271,16 @@ export class DeviceMonitor {
     };
 
     try {
-      const totalBytesNum: number = await statfs.getTotalSize(mountPath);
-      const availableBytesNum: number = await statfs.getFreeSize(mountPath);
+      //const totalBytesNum: number = await statfs.getTotalSize(mountPath);
+      //const availableBytesNum: number = await statfs.getFreeSize(mountPath);
+
+      const totalBytesNum: number = await storageStatistics.getTotalSize()
+      const availableBytesNum: number = await storageStatistics.getFreeSize()
 
       const totalBytes = totalBytesNum;
       const availableBytes = availableBytesNum;
       const usedBytes = totalBytes - availableBytes;
-      const percentNum = usedBytes > 0 && totalBytes > 0 ? (usedBytes / totalBytes) * 100 : 0;
+      const percentNum = usedBytes > 0 && totalBytes > 0 ? Math.floor((usedBytes / totalBytes) * 100) : 0;
 
       return {
         mounted: mountPath,
