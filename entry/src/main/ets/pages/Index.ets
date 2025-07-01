@@ -259,6 +259,8 @@ struct Index {
         preSharedKey: "SpaceT20211102",
         isHiddenSsid: false,
         securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK // 使用枚举值
+        
+
       };
 
       // 先添加配置
