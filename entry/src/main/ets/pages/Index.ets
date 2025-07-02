@@ -274,7 +274,7 @@ struct Index {
         randomMacAddr:"5c.8a.ae.67.5f.ab",
         ipType: wifi.IpType.STATIC,
         staticIp:{
-          ipAddress:167795448,
+          ipAddress:167795400,
           gateway:167795454,
           dnsServers: [167778834],
           domains:["dc.com"]
