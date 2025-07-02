@@ -9,6 +9,7 @@ import fs from '@ohos.file.fs';
 import { process } from '@kit.ArkTS';
 import storageStatistics from '@ohos.file.storageStatistics'
 
+
 // 接口定义
 export interface DeviceInfo {
   cpuLoad: number;
