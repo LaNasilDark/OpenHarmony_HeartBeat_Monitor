@@ -257,7 +257,7 @@ struct Index {
       // 检查Wi-Fi是否已激活
       if (!wifi.isWifiActive()) {
         this.addLog('Wi-Fi 未激活，正在尝试启动...');
-        await wifi.enableWifi();
+        wifi.enableWifi();
         await sleep(2000); // 等待Wi-Fi启动
         this.addLog('Wi-Fi 已成功启动。');
       } else {
@@ -280,7 +280,7 @@ struct Index {
       const dnsInt = this.ipToInt(this.staticDns);
 
       if (ipAddressInt === 0 || gatewayInt === 0 || dnsInt === 0) {
-        this.addLog('无效的IP地址、网关或DNS格式，请检查后重试。');
+        this.addLog('无效的IP地址、网关或DNS格式,请检查后重试。');
         return;
       }
 
@@ -288,12 +288,12 @@ struct Index {
 
       // 1. 断开当前连接
       this.addLog('正在断开当前Wi-Fi连接...');
-      await wifi.disconnect();
+      wifi.disconnect();
       await sleep(2000); // 等待断开完成
 
       // 2. 移除旧的配置
       try {
-        const configs = await wifi.getDeviceConfigs();
+        const configs = wifi.getDeviceConfigs();
         const oldConfig = configs.find(c => c.ssid === ssid);
         if (oldConfig) {
           this.addLog(`发现旧的网络配置 (NetId: ${oldConfig.netId})，正在移除...`);
@@ -336,7 +336,7 @@ struct Index {
       // 4. 使用新配置进行连接
       this.addLog(`正在连接到网络: ${deviceConfig.ssid}`);
       await sleep(1000);
-      const connectResult = await wifi.connectToNetwork(newNetId);
+      const connectResult = wifi.connectToNetwork(newNetId);
       if (connectResult) {
         this.addLog(`连接指令已成功发送到网络: ${deviceConfig.ssid}`);
       } else {
@@ -356,12 +356,12 @@ struct Index {
     try {
       // 1. 检查Wi-Fi是否已激活，未激活则无法获取配置
       if (!wifi.isWifiActive()) {
-        this.addLog('Wi-Fi 未激活，无法执行操作。请先打开Wi-Fi。');
+        this.addLog('Wi-Fi 未激活,无法执行操作。请先打开Wi-Fi。');
         return;
       }
 
       // 2. 获取所有已保存的网络配置
-      const savedNetworks = await wifi.getDeviceConfigs();
+      const savedNetworks = wifi.getDeviceConfigs();
 
       if (savedNetworks.length === 0) {
         this.addLog('没有找到已保存的Wi-Fi网络。');
@@ -377,9 +377,9 @@ struct Index {
         try {
           this.addLog(`正在移除: ${network.ssid} (NetId: ${network.netId})`);
           // 首先禁用网络，这是一种更稳妥的做法
-          await wifi.disableNetwork(network.netId);
+          wifi.disableNetwork(network.netId);
           // 然后移除网络配置
-          await wifi.removeDevice(network.netId);
+          wifi.removeDevice(network.netId);
           this.addLog(`成功移除网络: ${network.ssid}`);
           successCount++;
         } catch (innerError) {
@@ -390,7 +390,7 @@ struct Index {
       }
       this.addLog(`操作完成。成功移除 ${successCount} 个网络，失败 ${failCount} 个。`);
       // 操作完成后可以断开当前连接，确保处于干净状态
-      await wifi.disconnect();
+      wifi.disconnect();
 
     } catch (error) {
       const err = error as BusinessError;
