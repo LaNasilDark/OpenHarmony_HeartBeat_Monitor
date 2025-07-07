@@ -7,7 +7,7 @@ import { BusinessError } from '@ohos.base';
 //import fs from '@ohos.file.fs';
 //import common from '@ohos.app.ability.common';
 //import ethernet from '@ohos.net.ethernet';
-
+import { fileIo as fs } from '@kit.CoreFileKit';
 
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
@@ -85,12 +85,12 @@ struct Index {
       .margin({ top: 10 })
 
 
-      Button('配置Wi-Fi网络')
+      Button('配置WiFi网络')
         .width(200)
         .height(50)
         .margin({ top: 10 })
         .onClick(() => {
-          this.configureWifi();
+          this.configureNetwork(1);
         })
       Button('忘记所有Wi-Fi')
         .width(200)
@@ -251,105 +251,127 @@ struct Index {
     }
   }
 
-  private async configureWifi(): Promise<void> {
-
-    try {
-      // 检查Wi-Fi是否已激活
-      if (!wifi.isWifiActive()) {
-        this.addLog('Wi-Fi 未激活，正在尝试启动...');
-        wifi.enableWifi();
-        await sleep(2000); // 等待Wi-Fi启动
-        this.addLog('Wi-Fi 已成功启动。');
-      } else {
-        this.addLog('Wi-Fi 已处于激活状态。');
-      }
-    } catch (error) {
-      const err = error as BusinessError;
-      const errorMsg = `启动Wi-Fi失败: ${JSON.stringify(err)}`;
-      hilog.error(DOMAIN, TAG, errorMsg);
-      this.addLog(errorMsg);
-      return; // 如果无法启动Wi-Fi，则中止后续操作
-    }
-
-    this.addLog('开始配置Wi-Fi网络...');
-
-    try {
-      // --- 新增: IP字符串转整数 ---
-      const ipAddressInt = this.ipToInt(this.staticIpAddress);
-      const gatewayInt = this.ipToInt(this.staticGateway);
-      const dnsInt = this.ipToInt(this.staticDns);
-
-      if (ipAddressInt === 0 || gatewayInt === 0 || dnsInt === 0) {
-        this.addLog('无效的IP地址、网关或DNS格式,请检查后重试。');
+   private async configureNetwork(mode:number): Promise<void> {
+    switch (mode) {
+      case 0:
+        this.addLog('模式 0: 开始执行延时操作...');
+        await sleep(10000); // 等待10秒
+        this.addLog('模式 0: 延时10秒结束。');
         return;
-      }
 
-      const ssid = "JDSK"; // 目标网络SSID
+      case 1: //目前wifi配置模式存在bug：由于无法清除/data/service/el1/public/dhcp/内的缓存文件，导致无法添加新的wifi配置
+        this.addLog('模式 1: 开始配置Wi-Fi网络...');
+        try {
+          // 检查Wi-Fi是否已激活
+          if (!wifi.isWifiActive()) {
+            this.addLog('Wi-Fi 未激活，正在尝试启动...');
+            wifi.enableWifi();
+            await sleep(2000); // 等待Wi-Fi启动
+            this.addLog('Wi-Fi 已成功启动。');
+          } else {
+            this.addLog('Wi-Fi 已处于激活状态。');
+          }
+        } catch (error) {
+          const err = error as BusinessError;
+          const errorMsg = `启动Wi-Fi失败: ${JSON.stringify(err)}`;
+          hilog.error(DOMAIN, TAG, errorMsg);
+          this.addLog(errorMsg);
+          return; // 如果无法启动Wi-Fi，则中止后续操作
+        }
 
-      // 1. 断开当前连接
-      this.addLog('正在断开当前Wi-Fi连接...');
-      wifi.disconnect();
-      await sleep(2000); // 等待断开完成
+        try {
+          // --- 新增: IP字符串转整数 ---
+          const ipAddressInt = this.ipToInt(this.staticIpAddress);
+          const gatewayInt = this.ipToInt(this.staticGateway);
+          const dnsInt = this.ipToInt(this.staticDns);
 
-      // 2. 移除旧的配置
-      try {
-        const configs = wifi.getDeviceConfigs();
-        const oldConfig = configs.find(c => c.ssid === ssid);
-        if (oldConfig) {
-          this.addLog(`发现旧的网络配置 (NetId: ${oldConfig.netId})，正在移除...`);
-          wifi.disableNetwork(oldConfig.netId);
-          wifi.removeDevice(oldConfig.netId);
-          this.addLog('旧配置移除成功。');
+          if (ipAddressInt === 0 || gatewayInt === 0 || dnsInt === 0) {
+            this.addLog('无效的IP地址、网关或DNS格式,请检查后重试。');
+            return;
+          }
+
+          const ssid = "JDSK"; // 目标网络SSID
+
+          // 1. 断开当前连接
+          this.addLog('正在断开当前Wi-Fi连接...');
+          wifi.disconnect();
+          await sleep(2000); // 等待断开完成
+
+          // 2. 移除旧的配置
+          try {
+            const configs = wifi.getDeviceConfigs();
+            const oldConfig = configs.find(c => c.ssid === ssid);
+            if (oldConfig) {
+              this.addLog(`发现旧的网络配置 (NetId: ${oldConfig.netId})，正在移除...`);
+              wifi.disableNetwork(oldConfig.netId);
+              wifi.removeDevice(oldConfig.netId);
+              this.addLog('旧配置移除成功。');
+              await sleep(1000);
+              //return;
+            }
+          } catch (removeError) {
+            this.addLog(`移除旧配置时发生非致命错误: ${JSON.stringify(removeError)}`);
+          }
+
+          //处理dhcp缓存配置
+          fs.unlink("/data/service/el1/public/dhcp/dhcp_cache.conf")
+            .then(() => {
+              this.addLog('已清除DHCP缓存配置。');
+            })
+            .catch((unlinkError: BusinessError) => {
+              this.addLog(`清除DHCP缓存配置失败: ${JSON.stringify(unlinkError)}`);
+            });
+
+          // 3. 创建并添加新的网络配置
+          let deviceConfig: wifi.WifiDeviceConfig = {
+            ssid: ssid,
+            bssid: "c4:69:f0:e7:4c:81",
+            preSharedKey: "SpaceT20211102",
+            isHiddenSsid: false,
+            securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK,
+            creatorUid: 0,
+            disableReason: 0,
+            netId: 0,
+            randomMacType: 0,
+            randomMacAddr: "5c.8a.ae.67.5f.ab",
+            ipType: wifi.IpType.STATIC,
+            staticIp: {
+              ipAddress: ipAddressInt,
+              gateway: gatewayInt,
+              dnsServers: [dnsInt],
+              domains: ["dc.com"]
+            }
+          };
+
+          this.addLog('正在添加新的Wi-Fi配置...');
+          const newNetId = await wifi.addDeviceConfig(deviceConfig);
+          this.addLog(`添加新Wi-Fi配置成功, 网络ID: ${newNetId}`);
+
+          // 4. 使用新配置进行连接
+          this.addLog(`正在连接到网络: ${deviceConfig.ssid}`);
           await sleep(1000);
-          //return; 
+          const connectResult = wifi.connectToNetwork(newNetId);
+          if (connectResult) {
+            this.addLog(`连接指令已成功发送到网络: ${deviceConfig.ssid}`);
+          } else {
+            this.addLog(`发送连接指令失败。`);
+          }
+
+        } catch (error) {
+          const err = error as BusinessError;
+          hilog.error(DOMAIN, TAG, `Wi-Fi配置失败: ${JSON.stringify(err)}`);
+          this.addLog(`Wi-Fi配置失败: ${JSON.stringify(err)}`);
+          this.addLog('请检查应用权限及参数。');
         }
-      } catch (removeError) {
-        this.addLog(`移除旧配置时发生非致命错误: ${JSON.stringify(removeError)}`);
-      }
+        break;
 
-
-      // 3. 创建并添加新的网络配置
-      let deviceConfig: wifi.WifiDeviceConfig = {
-        ssid: ssid,
-        bssid: "c4:69:f0:e7:4c:81",
-        preSharedKey: "SpaceT20211102",
-        isHiddenSsid: false,
-        securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_PSK,
-        creatorUid: 0,
-        disableReason: 0,
-        netId: 0,
-        randomMacType: 0,
-        randomMacAddr: "5c.8a.ae.67.5f.ab",
-        ipType: wifi.IpType.STATIC,
-        staticIp: {
-          ipAddress: ipAddressInt,
-          gateway: gatewayInt,
-          dnsServers: [dnsInt],
-          domains: ["dc.com"]
-        }
-      };
-
-      this.addLog('正在添加新的Wi-Fi配置...');
-      const newNetId = await wifi.addDeviceConfig(deviceConfig);
-      this.addLog(`添加新Wi-Fi配置成功, 网络ID: ${newNetId}`);
-
-      // 4. 使用新配置进行连接
-      this.addLog(`正在连接到网络: ${deviceConfig.ssid}`);
-      await sleep(1000);
-      const connectResult = wifi.connectToNetwork(newNetId);
-      if (connectResult) {
-        this.addLog(`连接指令已成功发送到网络: ${deviceConfig.ssid}`);
-      } else {
-        this.addLog(`发送连接指令失败。`);
-      }
-
-    } catch (error) {
-      const err = error as BusinessError;
-      hilog.error(DOMAIN, TAG, `Wi-Fi配置失败: ${JSON.stringify(err)}`);
-      this.addLog(`Wi-Fi配置失败: ${JSON.stringify(err)}`);
-      this.addLog('请检查应用权限及参数。');
+      default:
+        this.addLog(`未知的配置模式: ${mode}`);
+        break;
     }
   }
+
+
 
    private async forgetAllWifiNetworks(): Promise<void> {
     this.addLog('开始清除所有已保存的Wi-Fi网络...');
