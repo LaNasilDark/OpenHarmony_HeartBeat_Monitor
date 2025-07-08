@@ -39,6 +39,12 @@ struct Index {
 
   private monitor: DeviceMonitor = new DeviceMonitor(monitorConfig);
 
+  aboutToAppear() {
+    this.addLog('组件即将加载，自动启动监控服务...');
+    this.startMonitorService();
+    hilog.info(DOMAIN, TAG, 'Index component is about to appear.');
+  }
+
   public addLog(log: string): void {
     const now = new Date();
     const timestamp = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
