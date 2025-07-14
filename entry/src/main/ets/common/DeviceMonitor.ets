@@ -5,9 +5,10 @@ import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
 import fs from '@ohos.file.fs';
 //import { statfs } from '@kit.CoreFileKit';
-//import ethernet from '@ohos.net.ethernet';
+import ethernet from '@ohos.net.ethernet';
 import { process } from '@kit.ArkTS';
 import storageStatistics from '@ohos.file.storageStatistics'
+import connection from '@ohos.net.connection';
 
 
 // 接口定义
@@ -420,17 +421,40 @@ export class DeviceMonitor {
 
   // 获取本地IP地址
   private async fetchLocalIp(): Promise<string> {
+    const defaultIp = "0.0.0.0";
     try {
-      const ipInfo = await wifiManager.getIpInfo();
-      const currentIpNum = ipInfo.ipAddress;
-      if (currentIpNum !== 0) {
-        return (currentIpNum >>> 24) + '.' + (currentIpNum >> 16 & 0xFF) + '.' + (currentIpNum >> 8 & 0xFF) + '.' + (currentIpNum & 0xFF);
+      const defaultNet = await connection.getDefaultNet();
+      if (defaultNet) {
+        const netCaps = await connection.getNetCapabilities(defaultNet);
+        if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_WIFI)) {
+          try {
+            const wifiInfo = await wifiManager.getIpInfo();
+            if (wifiInfo && wifiInfo.ipAddress) {
+              const currentIpNum = wifiInfo.ipAddress;
+              return (currentIpNum >>> 24) + '.' + (currentIpNum >> 16 & 0xFF) + '.' + (currentIpNum >> 8 & 0xFF) + '.' + (currentIpNum & 0xFF);
+            }
+          } catch (e) {
+            hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error fetching WiFi info: ${JSON.stringify(e)}`);
+          }
+        } else if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_ETHERNET)) {
+          try {
+            const ifaceConfig = await ethernet.getIfaceConfig(this.config.networkInterface);
+            if (ifaceConfig && ifaceConfig.ipAddr) {
+              hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Ethernet IP found: ${ifaceConfig.ipAddr}`);
+              return ifaceConfig.ipAddr;
+            }
+          } catch (error) {
+            hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `getIfaceConfig promise error = ${JSON.stringify(error)}`);
+          }
+        }
+      } else {
+        hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'No default network found');
       }
-      return "0.0.0.0";
-    } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error fetching local IP: ${JSON.stringify(error)}`);
-      return "0.0.0.0";
+    } catch(e) {
+      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error fetching default network: ${JSON.stringify(e)}`);
     }
+    hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Could not determine IP. Returning default.');
+    return defaultIp;
   }
 
   // 获取设备序列号

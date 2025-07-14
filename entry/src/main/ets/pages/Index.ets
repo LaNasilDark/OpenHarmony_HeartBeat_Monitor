@@ -9,6 +9,7 @@ import connection from '@ohos.net.connection';
 import ethernet from '@ohos.net.ethernet';
 import { fileIo as fs } from '@kit.CoreFileKit';
 
+
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
 
@@ -16,7 +17,7 @@ const DOMAIN: number = 0x0001;
 
 // 监控配置
 const monitorConfig: MonitorConfig = {
-  targetUdpIp: "192.168.5.4", // 请替换为您的目标IP地址
+  targetUdpIp: "192.168.5.5", // 请替换为您的目标IP地址
   targetUdpPort: 9990,
   localUdpPort: 9991,
   agentVersion: '1.14514',
@@ -41,9 +42,32 @@ struct Index {
 
   private monitor: DeviceMonitor = new DeviceMonitor(monitorConfig);
 
-  aboutToAppear() {
-    this.addLog('组件即将加载，自动启动监控服务...');
-    this.configureNetwork(0); // 默认使用模式1进行Wi-Fi配置
+  async aboutToAppear() {
+    this.addLog('组件即将加载...');
+
+    // 动态检测并设置网络接口
+    try {
+      const defaultNet = await connection.getDefaultNet();
+      if (defaultNet) {
+        const netCaps = await connection.getNetCapabilities(defaultNet);
+        if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_WIFI)) {
+          monitorConfig.networkInterface = 'wlan0';
+          this.addLog('检测到默认网络为Wi-Fi，使用接口 wlan0');
+        } else if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_ETHERNET)) {
+          monitorConfig.networkInterface = 'eth0';
+          this.addLog('检测到默认网络为以太网，使用接口 eth0');
+        }
+        // 使用更新后的配置重新创建监控实例，确保配置生效
+        this.monitor = new DeviceMonitor(monitorConfig);
+      } else {
+        this.addLog('未检测到默认网络连接。将使用默认配置 wlan0');
+      }
+    } catch(e) {
+      this.addLog(`检测网络接口失败: ${JSON.stringify(e)}`);
+    }
+
+    this.addLog('自动配置网络并启动监控服务...');
+    this.configureNetwork(0); // 尝试配置以太网
     this.startMonitorService();
     hilog.info(DOMAIN, TAG, 'Index component is about to appear.');
   }

@@ -363,6 +363,7 @@ pip install psutil netifaces PyYAML
 3. 远程固件升级（FOTA）?
 4. ~~尝试让磁盘统计可以获取整机而非沙盒内的数据~~
 5. 尝试删除/data/service/el1/public/dhcp/dhcp_cache.conf来清除对已有网络与ip地址的记忆，确保配网的新传入ip生效
+6. 支持有线网络配置
 
 ## 技术支持(真的会有吗？)
 
