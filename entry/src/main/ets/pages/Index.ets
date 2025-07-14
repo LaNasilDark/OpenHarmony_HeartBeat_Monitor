@@ -3,18 +3,20 @@ import { DeviceMonitor, MonitorConfig, DeviceInfo } from '../common/DeviceMonito
 //import wifi from '@ohos.wifiManager';
 import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
-//import connection from '@ohos.net.connection';
+import connection from '@ohos.net.connection';
 //import fs from '@ohos.file.fs';
 //import common from '@ohos.app.ability.common';
-//import ethernet from '@ohos.net.ethernet';
+import ethernet from '@ohos.net.ethernet';
 import { fileIo as fs } from '@kit.CoreFileKit';
 
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
 
+
+
 // 监控配置
 const monitorConfig: MonitorConfig = {
-  targetUdpIp: "10.0.90.203", // 请替换为您的目标IP地址
+  targetUdpIp: "192.168.5.4", // 请替换为您的目标IP地址
   targetUdpPort: 9990,
   localUdpPort: 9991,
   agentVersion: '1.14514',
@@ -41,6 +43,7 @@ struct Index {
 
   aboutToAppear() {
     this.addLog('组件即将加载，自动启动监控服务...');
+    this.configureNetwork(0); // 默认使用模式1进行Wi-Fi配置
     this.startMonitorService();
     hilog.info(DOMAIN, TAG, 'Index component is about to appear.');
   }
@@ -260,10 +263,21 @@ struct Index {
    private async configureNetwork(mode:number): Promise<void> {
     switch (mode) {
       case 0:
-        this.addLog('模式 0: 开始执行延时操作...');
-        await sleep(10000); // 等待10秒
-        this.addLog('模式 0: 延时10秒结束。');
-        return;
+        let config: ethernet.InterfaceConfiguration ={
+          mode: ethernet.IPSetMode.STATIC,
+          ipAddr: "192.168.5.114",
+          route: "192.168.5.0",
+          gateway: "192.168.5.1",
+          netMask: "255.255.255.0",
+          dnsServers: "0.0.0.0"
+        };
+        ethernet.setIfaceConfig("eth0", config, (error: BusinessError) => {
+          if (error) {
+            console.error("setIfaceConfig callback error = " + JSON.stringify(error));
+          } else {
+            console.log("setIfaceConfig callback ok");
+          }
+        });
 
       case 1: //目前wifi配置模式存在bug：由于无法清除/data/service/el1/public/dhcp/内的缓存文件，导致无法添加新的wifi配置
         this.addLog('模式 1: 开始配置Wi-Fi网络...');
