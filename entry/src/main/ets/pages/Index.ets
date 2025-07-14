@@ -302,6 +302,7 @@ struct Index {
             console.log("setIfaceConfig callback ok");
           }
         });
+        break;
 
       case 1: //目前wifi配置模式存在bug：由于无法清除/data/service/el1/public/dhcp/内的缓存文件，导致无法添加新的wifi配置
         this.addLog('模式 1: 开始配置Wi-Fi网络...');
