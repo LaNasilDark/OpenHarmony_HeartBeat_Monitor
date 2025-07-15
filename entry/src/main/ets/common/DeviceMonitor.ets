@@ -1,12 +1,9 @@
 import hilog from '@ohos.hilog';
 import socket from '@ohos.net.socket';
-//import wifiManager from '@ohos.wifiManager';
 import wifi from '@ohos.wifi';
 import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
-//import fs from '@ohos.file.fs';
 import { fileIo as fs } from '@kit.CoreFileKit';
-//import { statfs } from '@kit.CoreFileKit';
 import ethernet from '@ohos.net.ethernet';
 import { process } from '@kit.ArkTS';
 import storageStatistics from '@ohos.file.storageStatistics'
@@ -87,6 +84,11 @@ interface CpuStat {
   total: number;
 }
 
+interface ErrorLike {
+  code?: number;
+  message?: string;
+}
+
 export interface MonitorConfig {
   targetUdpIp: string;
   targetUdpPort: number;
@@ -114,20 +116,29 @@ export interface DeviceDataCache {
 export class DeviceMonitor {
   private static readonly TAG: string = 'DeviceMonitor';
   private static readonly DOMAIN: number = 0x0001;
-  
+
+  // 将系统文件路径定义为常量
+  private static readonly FILE_PATH_MEM_INFO = '/proc/meminfo';
+  private static readonly FILE_PATH_PROC_STAT = '/proc/stat';
+  private static readonly FILE_PATH_NET_DEV = '/proc/net/dev';
+  private static readonly FILE_PATH_SERIAL_NUMBER = '/proc/device-tree/serial-number';
+  private static readonly FILE_PATH_CPU_TEMP = '/sys/class/thermal/thermal_zone0/temp';
+  private static readonly FILE_PATH_MAC_ADDRESS_TPL = '/sys/class/net/{iface}/address';
+  private static readonly FILE_PATH_DHCP_CACHE = "/data/service/el1/public/dhcp/dhcp_cache.conf";
+
   private config: MonitorConfig;
   private udpSocket: socket.UDPSocket;
   private udpSocketBound: boolean = false;
   private sendIntervalId: number = -1;
   private isRunning: boolean = false;
-  
+
   // 设备信息缓存
   private deviceData: DeviceDataCache;
 
   constructor(config: MonitorConfig) {
     this.config = config;
     this.udpSocket = socket.constructUDPSocketInstance();
-    
+
     // 初始化设备数据
     this.deviceData = {
       cpuTemp: 'Loading...',
@@ -184,6 +195,23 @@ export class DeviceMonitor {
     }
   }
 
+  // 统一的错误格式化方法
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private formatError(error: Object): string {
+    // 使用属性检查替代 instanceof BusinessError，因为 BusinessError 是一个接口
+    if (typeof error === 'object' && error !== null) {
+      // ArkTS 不支持 'in' 操作符或对象字面量类型，所以我们使用一个接口
+      const err = error as ErrorLike;
+      if (err.code !== undefined && err.message !== undefined) {
+        return `BusinessError: code=${err.code}, message=${err.message}`;
+      }
+    }
+    if (error instanceof Error) {
+      return `Error: ${error.message}`;
+    }
+    return JSON.stringify(error);
+  }
+
   // 系统文件读取工具方法
   private async readSystemFileContent(filePath: string): Promise<string> {
     let file: fs.File | null = null;
@@ -195,14 +223,14 @@ export class DeviceMonitor {
       const content = decoder.decode(new Uint8Array(buffer, 0, bytesRead));
       return content.trim();
     } catch (error) {
-      this.log(`Failed to read system file at ${filePath}: ${JSON.stringify(error)}`, 'error');
+      this.log(`Failed to read system file at ${filePath}: ${this.formatError(error)}`, 'error');
       return 'N/A';
     } finally {
       if (file) {
         try {
           await fs.close(file.fd);
         } catch (closeError) {
-          this.log(`Failed to close file ${filePath}: ${JSON.stringify(closeError)}`, 'error');
+          this.log(`Failed to close file ${filePath}: ${this.formatError(closeError)}`, 'error');
         }
       }
     }
@@ -241,9 +269,9 @@ export class DeviceMonitor {
     };
 
     try {
-      const content = await this.readSystemFileContent('/proc/meminfo');
+      const content = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_MEM_INFO);
       if (content === 'N/A') {
-        this.log("Failed to read /proc/meminfo.", 'error');
+        this.log("Failed to read meminfo.", 'error');
         return defaultErrorMemInfo;
       }
 
@@ -267,7 +295,7 @@ export class DeviceMonitor {
       return defaultErrorMemInfo;
 
     } catch (error) {
-      this.log(`Failed to fetch mem info: ${JSON.stringify(error)}`, 'error');
+      this.log(`Failed to fetch mem info: ${this.formatError(error)}`, 'error');
       return defaultErrorMemInfo;
     }
   }
@@ -285,12 +313,12 @@ export class DeviceMonitor {
 
   // 获取CPU使用率
   private async getCpuPercent(interval: number = 1000): Promise<number> {
-    const stat1 = await this.readSystemFileContent('/proc/stat');
+    const stat1 = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_PROC_STAT);
     const cpu1 = this.parseCpuStat(stat1);
 
     await new Promise<void>(resolve => setTimeout(resolve, interval));
 
-    const stat2 = await this.readSystemFileContent('/proc/stat');
+    const stat2 = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_PROC_STAT);
     const cpu2 = this.parseCpuStat(stat2);
 
     const idleDelta = cpu2.idle - cpu1.idle;
@@ -315,9 +343,6 @@ export class DeviceMonitor {
     };
 
     try {
-      //const totalBytesNum: number = await statfs.getTotalSize(mountPath);
-      //const availableBytesNum: number = await statfs.getFreeSize(mountPath);
-
       const totalBytesNum: number = await storageStatistics.getTotalSize()
       const availableBytesNum: number = await storageStatistics.getFreeSize()
 
@@ -335,7 +360,7 @@ export class DeviceMonitor {
         unit: 'Byte'
       };
     } catch (error) {
-      this.log(`Failed to fetch disk info for ${mountPath}: ${JSON.stringify(error)}`, 'error');
+      this.log(`Failed to fetch disk info for ${mountPath}: ${this.formatError(error)}`, 'error');
       return defaultErrorDiskInfo;
     }
   }
@@ -361,7 +386,7 @@ export class DeviceMonitor {
       this.log(`Interface ${interfaceName} not found in /proc/net/dev.`, 'warn');
       return null;
     } catch (e) {
-      this.log(`Error parsing /proc/net/dev: ${JSON.stringify(e)}`, 'error');
+      this.log(`Error parsing /proc/net/dev: ${this.formatError(e)}`, 'error');
       return null;
     }
   }
@@ -378,11 +403,11 @@ export class DeviceMonitor {
     };
 
     try {
-      const stats1Content = await this.readSystemFileContent('/proc/net/dev');
+      const stats1Content = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_NET_DEV);
       if (stats1Content === 'N/A') {
         return defaultErrorNetInfo;
       }
-      
+
       const initialStats = this.parseNetDevContent(stats1Content, interfaceName);
       if (!initialStats) {
         return defaultErrorNetInfo;
@@ -390,11 +415,11 @@ export class DeviceMonitor {
 
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
 
-      const stats2Content = await this.readSystemFileContent('/proc/net/dev');
+      const stats2Content = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_NET_DEV);
       if (stats2Content === 'N/A') {
         return defaultErrorNetInfo;
       }
-      
+
       const finalStats = this.parseNetDevContent(stats2Content, interfaceName);
       if (!finalStats) {
         return defaultErrorNetInfo;
@@ -414,7 +439,7 @@ export class DeviceMonitor {
         unit: 'Bytes/s'
       };
     } catch (error) {
-      this.log(`Exception in fetchNetworkInfo: ${JSON.stringify(error)}`, 'error');
+      this.log(`Exception in fetchNetworkInfo: ${this.formatError(error)}`, 'error');
       return defaultErrorNetInfo;
     }
   }
@@ -422,23 +447,21 @@ export class DeviceMonitor {
   // 获取系统运行时间
   private async fetchUptime(): Promise<number | null> {
     try {
-      
       const uptimeSeconds = process.uptime();
       if (!isNaN(uptimeSeconds)) {
         const upTimeDays = uptimeSeconds / 86400;
         return Number(upTimeDays.toFixed(2));
       }
-      
       return null;
     } catch (e) {
-      this.log(`Exception in fetchUptime: ${JSON.stringify(e)}`, 'error');
+      this.log(`Exception in fetchUptime: ${this.formatError(e)}`, 'error');
       return null;
     }
   }
 
   // 获取MAC地址
   private async fetchMacAddress(): Promise<string> {
-    const macFilePath = `/sys/class/net/${this.config.networkInterface}/address`;
+    const macFilePath = DeviceMonitor.FILE_PATH_MAC_ADDRESS_TPL.replace('{iface}', this.config.networkInterface);
     return await this.readSystemFileContent(macFilePath);
   }
 
@@ -450,8 +473,7 @@ export class DeviceMonitor {
 
   // 获取CPU温度
   private async fetchCpuTemperature(): Promise<number | string> {
-    const thermalFilePath = '/sys/class/thermal/thermal_zone0/temp';
-    const tempStr = await this.readSystemFileContent(thermalFilePath);
+    const tempStr = await this.readSystemFileContent(DeviceMonitor.FILE_PATH_CPU_TEMP);
     if (tempStr !== 'N/A' && tempStr !== 'Loading...') {
       const numericTemp = parseFloat(tempStr);
       if (!isNaN(numericTemp)) {
@@ -472,11 +494,10 @@ export class DeviceMonitor {
           try {
             const wifiInfo = await wifi.getIpInfo();
             if (wifiInfo && wifiInfo.ipAddress) {
-              const currentIpNum = wifiInfo.ipAddress;
-              return (currentIpNum >>> 24) + '.' + (currentIpNum >> 16 & 0xFF) + '.' + (currentIpNum >> 8 & 0xFF) + '.' + (currentIpNum & 0xFF);
+              return this.manualIntToIp(wifiInfo.ipAddress);
             }
           } catch (e) {
-            this.log(`Error fetching WiFi info: ${JSON.stringify(e)}`, 'error');
+            this.log(`Error fetching WiFi info: ${this.formatError(e)}`, 'error');
           }
         } else if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_ETHERNET)) {
           try {
@@ -486,14 +507,14 @@ export class DeviceMonitor {
               return ifaceConfig.ipAddr;
             }
           } catch (error) {
-            this.log(`getIfaceConfig promise error = ${JSON.stringify(error)}`, 'error');
+            this.log(`getIfaceConfig promise error = ${this.formatError(error)}`, 'error');
           }
         }
       } else {
         this.log('No default network found', 'warn');
       }
-    } catch(e) {
-      this.log(`Error fetching default network: ${JSON.stringify(e)}`, 'error');
+    } catch (e) {
+      this.log(`Error fetching default network: ${this.formatError(e)}`, 'error');
     }
     this.log('Could not determine IP. Returning default.', 'warn');
     return defaultIp;
@@ -501,8 +522,7 @@ export class DeviceMonitor {
 
   // 获取设备序列号
   private async fetchSN(): Promise<string> {
-    const snFilePath = '/proc/device-tree/serial-number';
-    return await this.readSystemFileContent(snFilePath);
+    return await this.readSystemFileContent(DeviceMonitor.FILE_PATH_SERIAL_NUMBER);
   }
 
   // 计算校验和
@@ -586,9 +606,8 @@ export class DeviceMonitor {
       this.log('Device info collected successfully');
       return deviceInfo;
     } catch (error) {
-      this.log(`Failed to collect device info: ${JSON.stringify(error)}`, 'error');
-      // 重新抛出包装为Error对象的错误，以符合ArkTS规范
-      throw new Error(`Failed to collect device info: ${JSON.stringify(error)}`);
+      this.log(`Failed to collect device info: ${this.formatError(error)}`, 'error');
+      throw new Error(`Failed to collect device info: ${this.formatError(error)}`);
     }
   }
 
@@ -625,8 +644,8 @@ export class DeviceMonitor {
 
       this.log(`Device info sent to ${this.config.targetUdpIp}:${this.config.targetUdpPort}`);
     } catch (error) {
-      this.log(`Failed to send device info via UDP: ${JSON.stringify(error)}`, 'error');
-      throw new Error(`Failed to send device info via UDP: ${JSON.stringify(error)}`);
+      this.log(`Failed to send device info via UDP: ${this.formatError(error)}`, 'error');
+      throw new Error(`Failed to send device info via UDP: ${this.formatError(error)}`);
     }
   }
 
@@ -640,10 +659,10 @@ export class DeviceMonitor {
     try {
       // 绑定UDP套接字
       if (!this.udpSocketBound) {
-        await this.udpSocket.bind({ 
-          address: '0.0.0.0', 
-          port: this.config.localUdpPort, 
-          family: 0 
+        await this.udpSocket.bind({
+          address: '0.0.0.0',
+          port: this.config.localUdpPort,
+          family: 0
         });
         this.udpSocketBound = true;
         this.log(`UDP socket bound to port ${this.config.localUdpPort}`);
@@ -657,15 +676,15 @@ export class DeviceMonitor {
         try {
           await this.sendDeviceInfoViaUDP();
         } catch (e) {
-          this.log(`Error in periodic UDP send: ${JSON.stringify(e)}`, 'error');
+          this.log(`Error in periodic UDP send: ${this.formatError(e)}`, 'error');
         }
       }, this.config.collectInterval);
 
       this.isRunning = true;
       this.log('Device monitoring started successfully');
     } catch (error) {
-      this.log(`Failed to start monitoring: ${JSON.stringify(error)}`, 'error');
-      throw new Error(`Failed to start monitoring: ${JSON.stringify(error)}`);
+      this.log(`Failed to start monitoring: ${this.formatError(error)}`, 'error');
+      throw new Error(`Failed to start monitoring: ${this.formatError(error)}`);
     }
   }
 
@@ -686,7 +705,7 @@ export class DeviceMonitor {
       this.isRunning = false;
       this.log('Device monitoring stopped successfully');
     } catch (error) {
-      this.log(`Failed to stop monitoring: ${JSON.stringify(error)}`, 'error');
+      this.log(`Failed to stop monitoring: ${this.formatError(error)}`, 'error');
     }
   }
 
@@ -697,7 +716,8 @@ export class DeviceMonitor {
 
   // 获取当前设备数据快照
   public getDeviceDataSnapshot(): DeviceDataCache {
-    return {
+    // Manually copy properties to avoid Object.assign
+    const snapshot: DeviceDataCache = {
       cpuTemp: this.deviceData.cpuTemp,
       sn: this.deviceData.sn,
       time: this.deviceData.time,
@@ -709,31 +729,20 @@ export class DeviceMonitor {
       cpuLoad: this.deviceData.cpuLoad,
       mem: this.deviceData.mem
     };
+    return snapshot;
   }
 
   // 更新配置
   public updateConfig(newConfig: Partial<MonitorConfig>): void {
-    if (newConfig.targetUdpIp !== undefined) {
-      this.config.targetUdpIp = newConfig.targetUdpIp;
-    }
-    if (newConfig.targetUdpPort !== undefined) {
-      this.config.targetUdpPort = newConfig.targetUdpPort;
-    }
-    if (newConfig.localUdpPort !== undefined) {
-      this.config.localUdpPort = newConfig.localUdpPort;
-    }
-    if (newConfig.agentVersion !== undefined) {
-      this.config.agentVersion = newConfig.agentVersion;
-    }
-    if (newConfig.networkInterface !== undefined) {
-      this.config.networkInterface = newConfig.networkInterface;
-    }
-    if (newConfig.diskMountPath !== undefined) {
-      this.config.diskMountPath = newConfig.diskMountPath;
-    }
-    if (newConfig.collectInterval !== undefined) {
-      this.config.collectInterval = newConfig.collectInterval;
-    }
+    // Manually update properties to avoid Object.assign
+    if (newConfig.targetUdpIp !== undefined) this.config.targetUdpIp = newConfig.targetUdpIp;
+    if (newConfig.targetUdpPort !== undefined) this.config.targetUdpPort = newConfig.targetUdpPort;
+    if (newConfig.localUdpPort !== undefined) this.config.localUdpPort = newConfig.localUdpPort;
+    if (newConfig.agentVersion !== undefined) this.config.agentVersion = newConfig.agentVersion;
+    if (newConfig.networkInterface !== undefined) this.config.networkInterface = newConfig.networkInterface;
+    if (newConfig.diskMountPath !== undefined) this.config.diskMountPath = newConfig.diskMountPath;
+    if (newConfig.collectInterval !== undefined) this.config.collectInterval = newConfig.collectInterval;
+    if (newConfig.logCallback !== undefined) this.config.logCallback = newConfig.logCallback;
     this.log('Monitor configuration updated');
   }
 
@@ -742,7 +751,7 @@ export class DeviceMonitor {
     this.stopMonitoring();
     if (this.udpSocketBound) {
       this.udpSocket.close().catch((e: Object) => {
-        this.log(`Error closing UDP socket: ${JSON.stringify(e)}`, 'error');
+        this.log(`Error closing UDP socket: ${this.formatError(e)}`, 'error');
       });
       this.udpSocketBound = false;
     }
@@ -752,20 +761,32 @@ export class DeviceMonitor {
   // 新增：网络管理和设备控制方法
   // =================================================================
 
+  // 手动实现 IP 字符串到整数的转换
+  private manualIpToInt(ip: string): number {
+    const parts = ip.split('.').map(part => parseInt(part, 10));
+    if (parts.length !== 4 || parts.some(isNaN)) {
+      return 0; // Invalid format
+    }
+    return ((parts[3] << 24) | (parts[2] << 16) | (parts[1] << 8) | parts[0]) >>> 0;
+  }
+
+  // 手动实现整数到 IP 字符串的转换
+  private manualIntToIp(ipInt: number): string {
+    const part1 = ipInt & 255;
+    const part2 = (ipInt >> 8) & 255;
+    const part3 = (ipInt >> 16) & 255;
+    const part4 = (ipInt >> 24) & 255;
+    return `${part1}.${part2}.${part3}.${part4}`;
+  }
+
   private ipToInt(ip: string): number {
-    const parts = ip.split('.');
-    if (parts.length !== 4) {
-      return 0; // 无效格式
+    try {
+      // 使用手动实现替换 connection.convertIpToInt
+      return this.manualIpToInt(ip);
+    } catch (e) {
+      this.log(`Invalid IP format for ipToInt: ${ip}`, 'error');
+      return 0;
     }
-    let result = 0;
-    for (let i = 0; i < 4; i++) {
-      const part = parseInt(parts[i], 10);
-      if (isNaN(part) || part < 0 || part > 255) {
-        return 0; // 无效部分
-      }
-      result |= part << ((3 - i) * 8);
-    }
-    return result >>> 0; // 转换为无符号32位整数
   }
 
   public async autoDetectNetworkInterface(): Promise<void> {
@@ -785,7 +806,7 @@ export class DeviceMonitor {
         this.log('No default network connection detected. Using default wlan0.', 'warn');
       }
     } catch (e) {
-      this.log(`Failed to detect network interface: ${JSON.stringify(e)}`, 'error');
+      this.log(`Failed to detect network interface: ${this.formatError(e)}`, 'error');
     }
   }
 
@@ -798,12 +819,12 @@ export class DeviceMonitor {
         route: "0.0.0.0", // 通常设为0.0.0.0，由网关决定
         gateway: config.gateway,
         netMask: config.netmask,
-        dnsServers: config.dns
+        dnsServers: config.dns // dnsServers 需要一个字符串
       };
       await ethernet.setIfaceConfig(iface, ethConfig);
       this.log(`Successfully set Ethernet configuration for ${iface}.`);
     } catch (error) {
-      const errMsg = `Failed to configure Ethernet: ${JSON.stringify(error)}`;
+      const errMsg = `Failed to configure Ethernet: ${this.formatError(error)}`;
       this.log(errMsg, 'error');
       throw new Error(errMsg);
     }
@@ -846,10 +867,10 @@ export class DeviceMonitor {
 
       // 4. 清除DHCP缓存
       try {
-        await fs.unlink("/data/service/el1/public/dhcp/dhcp_cache.conf");
+        await fs.unlink(DeviceMonitor.FILE_PATH_DHCP_CACHE);
         this.log('DHCP cache cleared.');
       } catch (unlinkError) {
-        this.log(`Could not clear DHCP cache (this may be expected): ${JSON.stringify(unlinkError)}`, 'warn');
+        this.log(`Could not clear DHCP cache (this may be expected): ${this.formatError(unlinkError)}`, 'warn');
       }
 
       // 5. 创建并添加新配置
@@ -887,8 +908,7 @@ export class DeviceMonitor {
         throw new Error('Failed to send connection command.');
       }
     } catch (error) {
-      const err = error as BusinessError;
-      const errMsg = `Wi-Fi configuration failed: ${err.message || JSON.stringify(error)}`;
+      const errMsg = `Wi-Fi configuration failed: ${this.formatError(error)}`;
       this.log(errMsg, 'error');
       throw new Error(errMsg);
     }
@@ -919,16 +939,14 @@ export class DeviceMonitor {
           await wifi.removeDevice(network.netId);
           successCount++;
         } catch (innerError) {
-          const err = innerError as BusinessError;
-          this.log(`Failed to remove ${network.ssid}: ${err.message}`, 'error');
+          this.log(`Failed to remove ${network.ssid}: ${this.formatError(innerError)}`, 'error');
           failCount++;
         }
       }
       this.log(`Operation complete. Succeeded: ${successCount}, Failed: ${failCount}.`);
       await wifi.disconnect();
     } catch (error) {
-      const err = error as BusinessError;
-      const errMsg = `Failed to clear all Wi-Fi networks: ${err.message || JSON.stringify(error)}`;
+      const errMsg = `Failed to clear all Wi-Fi networks: ${this.formatError(error)}`;
       this.log(errMsg, 'error');
       throw new Error(errMsg);
     }
