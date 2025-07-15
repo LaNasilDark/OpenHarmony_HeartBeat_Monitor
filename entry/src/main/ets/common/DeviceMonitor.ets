@@ -8,7 +8,6 @@ import ethernet from '@ohos.net.ethernet';
 import { process } from '@kit.ArkTS';
 import storageStatistics from '@ohos.file.storageStatistics'
 import connection from '@ohos.net.connection';
-import { BusinessError } from '@ohos.base';
 
 // 接口定义
 export interface DeviceInfo {
@@ -492,7 +491,7 @@ export class DeviceMonitor {
         const netCaps = await connection.getNetCapabilities(defaultNet);
         if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_WIFI)) {
           try {
-            const wifiInfo = await wifi.getIpInfo();
+            const wifiInfo = wifi.getIpInfo();
             if (wifiInfo && wifiInfo.ipAddress) {
               return this.manualIntToIp(wifiInfo.ipAddress);
             }
@@ -836,7 +835,7 @@ export class DeviceMonitor {
       // 1. 确保Wi-Fi已激活
       if (!wifi.isWifiActive()) {
         this.log('Wi-Fi is not active, enabling...');
-        await wifi.enableWifi();
+        wifi.enableWifi();
         await new Promise<void>(resolve => setTimeout(resolve, 2000)); // 等待启动
         this.log('Wi-Fi enabled.');
       } else {
@@ -853,15 +852,15 @@ export class DeviceMonitor {
 
       // 3. 断开当前连接并移除旧配置
       this.log('Disconnecting current Wi-Fi...');
-      await wifi.disconnect();
+      wifi.disconnect();
       await new Promise<void>(resolve => setTimeout(resolve, 2000));
 
-      const existingConfigs = await wifi.getDeviceConfigs();
+      const existingConfigs = wifi.getDeviceConfigs();
       const oldConfig = existingConfigs.find(c => c.ssid === config.ssid);
       if (oldConfig) {
         this.log(`Found and removing old config for ${config.ssid} (NetId: ${oldConfig.netId})`);
-        await wifi.disableNetwork(oldConfig.netId);
-        await wifi.removeDevice(oldConfig.netId);
+        wifi.disableNetwork(oldConfig.netId);
+        wifi.removeDevice(oldConfig.netId);
         this.log('Old config removed.');
       }
 
@@ -901,7 +900,7 @@ export class DeviceMonitor {
       // 6. 连接到新网络
       this.log(`Connecting to ${config.ssid}...`);
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
-      const connectResult = await wifi.connectToNetwork(newNetId);
+      const connectResult = wifi.connectToNetwork(newNetId);
       if (connectResult) {
         this.log(`Successfully sent connection command for ${config.ssid}.`);
       } else {
@@ -922,7 +921,7 @@ export class DeviceMonitor {
         return;
       }
 
-      const savedNetworks = await wifi.getDeviceConfigs();
+      const savedNetworks = wifi.getDeviceConfigs();
       if (savedNetworks.length === 0) {
         this.log('No saved Wi-Fi networks found.');
         return;
@@ -935,8 +934,8 @@ export class DeviceMonitor {
       for (const network of savedNetworks) {
         try {
           this.log(`Removing: ${network.ssid} (NetId: ${network.netId})`);
-          await wifi.disableNetwork(network.netId);
-          await wifi.removeDevice(network.netId);
+          wifi.disableNetwork(network.netId);
+          wifi.removeDevice(network.netId);
           successCount++;
         } catch (innerError) {
           this.log(`Failed to remove ${network.ssid}: ${this.formatError(innerError)}`, 'error');
@@ -944,7 +943,7 @@ export class DeviceMonitor {
         }
       }
       this.log(`Operation complete. Succeeded: ${successCount}, Failed: ${failCount}.`);
-      await wifi.disconnect();
+      wifi.disconnect();
     } catch (error) {
       const errMsg = `Failed to clear all Wi-Fi networks: ${this.formatError(error)}`;
       this.log(errMsg, 'error');
