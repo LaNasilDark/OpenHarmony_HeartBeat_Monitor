@@ -1,15 +1,17 @@
 import hilog from '@ohos.hilog';
 import socket from '@ohos.net.socket';
-import wifiManager from '@ohos.wifiManager';
+//import wifiManager from '@ohos.wifiManager';
+import wifi from '@ohos.wifi';
 import systemDateTime from '@ohos.systemDateTime';
 import util from '@ohos.util';
-import fs from '@ohos.file.fs';
+//import fs from '@ohos.file.fs';
+import { fileIo as fs } from '@kit.CoreFileKit';
 //import { statfs } from '@kit.CoreFileKit';
 import ethernet from '@ohos.net.ethernet';
 import { process } from '@kit.ArkTS';
 import storageStatistics from '@ohos.file.storageStatistics'
 import connection from '@ohos.net.connection';
-
+import { BusinessError } from '@ohos.base';
 
 // 接口定义
 export interface DeviceInfo {
@@ -24,6 +26,24 @@ export interface DeviceInfo {
   sn: string;
   cpuTemperature: number;
   agentVersion: string;
+}
+
+export interface WifiConfig {
+  ssid: string;
+  bssid: string;
+  preSharedKey: string;
+  isHiddenSsid: boolean;
+  securityType: wifi.WifiSecurityType;
+  ipAddress: string;
+  gateway: string;
+  dns: string;
+}
+
+export interface EthernetConfig {
+  ipAddress: string;
+  gateway: string;
+  netmask: string;
+  dns: string;
 }
 
 export interface NetObjectType {
@@ -75,6 +95,7 @@ export interface MonitorConfig {
   networkInterface: string;
   diskMountPath: string;
   collectInterval: number;
+  logCallback?: (message: string) => void; // 新增日志回调
 }
 
 export interface DeviceDataCache {
@@ -142,6 +163,27 @@ export class DeviceMonitor {
     };
   }
 
+  // 日志记录工具
+  private log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+    // 优先使用回调将日志发送到UI
+    if (this.config.logCallback) {
+      this.config.logCallback(message);
+    }
+
+    // 同时记录到 hilog
+    switch (level) {
+      case 'info':
+        hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, message);
+        break;
+      case 'warn':
+        hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, message);
+        break;
+      case 'error':
+        hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, message);
+        break;
+    }
+  }
+
   // 系统文件读取工具方法
   private async readSystemFileContent(filePath: string): Promise<string> {
     let file: fs.File | null = null;
@@ -153,14 +195,14 @@ export class DeviceMonitor {
       const content = decoder.decode(new Uint8Array(buffer, 0, bytesRead));
       return content.trim();
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to read system file at ${filePath}: ${JSON.stringify(error)}`);
+      this.log(`Failed to read system file at ${filePath}: ${JSON.stringify(error)}`, 'error');
       return 'N/A';
     } finally {
       if (file) {
         try {
           await fs.close(file.fd);
         } catch (closeError) {
-          hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to close file ${filePath}: ${JSON.stringify(closeError)}`);
+          this.log(`Failed to close file ${filePath}: ${JSON.stringify(closeError)}`, 'error');
         }
       }
     }
@@ -201,7 +243,7 @@ export class DeviceMonitor {
     try {
       const content = await this.readSystemFileContent('/proc/meminfo');
       if (content === 'N/A') {
-        hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, "Failed to read /proc/meminfo.");
+        this.log("Failed to read /proc/meminfo.", 'error');
         return defaultErrorMemInfo;
       }
 
@@ -221,11 +263,11 @@ export class DeviceMonitor {
           unit: 'Byte'
         };
       }
-      hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, "Parsed MemTotal is 0.");
+      this.log("Parsed MemTotal is 0.", 'warn');
       return defaultErrorMemInfo;
 
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to fetch mem info: ${JSON.stringify(error)}`);
+      this.log(`Failed to fetch mem info: ${JSON.stringify(error)}`, 'error');
       return defaultErrorMemInfo;
     }
   }
@@ -293,7 +335,7 @@ export class DeviceMonitor {
         unit: 'Byte'
       };
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to fetch disk info for ${mountPath}: ${JSON.stringify(error)}`);
+      this.log(`Failed to fetch disk info for ${mountPath}: ${JSON.stringify(error)}`, 'error');
       return defaultErrorDiskInfo;
     }
   }
@@ -316,10 +358,10 @@ export class DeviceMonitor {
           }
         }
       }
-      hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Interface ${interfaceName} not found in /proc/net/dev.`);
+      this.log(`Interface ${interfaceName} not found in /proc/net/dev.`, 'warn');
       return null;
     } catch (e) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error parsing /proc/net/dev: ${JSON.stringify(e)}`);
+      this.log(`Error parsing /proc/net/dev: ${JSON.stringify(e)}`, 'error');
       return null;
     }
   }
@@ -372,7 +414,7 @@ export class DeviceMonitor {
         unit: 'Bytes/s'
       };
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Exception in fetchNetworkInfo: ${JSON.stringify(error)}`);
+      this.log(`Exception in fetchNetworkInfo: ${JSON.stringify(error)}`, 'error');
       return defaultErrorNetInfo;
     }
   }
@@ -389,7 +431,7 @@ export class DeviceMonitor {
       
       return null;
     } catch (e) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Exception in fetchUptime: ${JSON.stringify(e)}`);
+      this.log(`Exception in fetchUptime: ${JSON.stringify(e)}`, 'error');
       return null;
     }
   }
@@ -428,32 +470,32 @@ export class DeviceMonitor {
         const netCaps = await connection.getNetCapabilities(defaultNet);
         if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_WIFI)) {
           try {
-            const wifiInfo = await wifiManager.getIpInfo();
+            const wifiInfo = await wifi.getIpInfo();
             if (wifiInfo && wifiInfo.ipAddress) {
               const currentIpNum = wifiInfo.ipAddress;
               return (currentIpNum >>> 24) + '.' + (currentIpNum >> 16 & 0xFF) + '.' + (currentIpNum >> 8 & 0xFF) + '.' + (currentIpNum & 0xFF);
             }
           } catch (e) {
-            hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error fetching WiFi info: ${JSON.stringify(e)}`);
+            this.log(`Error fetching WiFi info: ${JSON.stringify(e)}`, 'error');
           }
         } else if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_ETHERNET)) {
           try {
             const ifaceConfig = await ethernet.getIfaceConfig(this.config.networkInterface);
             if (ifaceConfig && ifaceConfig.ipAddr) {
-              hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Ethernet IP found: ${ifaceConfig.ipAddr}`);
+              this.log(`Ethernet IP found: ${ifaceConfig.ipAddr}`);
               return ifaceConfig.ipAddr;
             }
           } catch (error) {
-            hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `getIfaceConfig promise error = ${JSON.stringify(error)}`);
+            this.log(`getIfaceConfig promise error = ${JSON.stringify(error)}`, 'error');
           }
         }
       } else {
-        hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'No default network found');
+        this.log('No default network found', 'warn');
       }
     } catch(e) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error fetching default network: ${JSON.stringify(e)}`);
+      this.log(`Error fetching default network: ${JSON.stringify(e)}`, 'error');
     }
-    hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Could not determine IP. Returning default.');
+    this.log('Could not determine IP. Returning default.', 'warn');
     return defaultIp;
   }
 
@@ -541,10 +583,10 @@ export class DeviceMonitor {
         agentVersion: this.config.agentVersion
       };
 
-      hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Device info collected successfully');
+      this.log('Device info collected successfully');
       return deviceInfo;
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to collect device info: ${JSON.stringify(error)}`);
+      this.log(`Failed to collect device info: ${JSON.stringify(error)}`, 'error');
       // 重新抛出包装为Error对象的错误，以符合ArkTS规范
       throw new Error(`Failed to collect device info: ${JSON.stringify(error)}`);
     }
@@ -581,9 +623,9 @@ export class DeviceMonitor {
         address: remoteAddress
       });
 
-      hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Device info sent to ${this.config.targetUdpIp}:${this.config.targetUdpPort}`);
+      this.log(`Device info sent to ${this.config.targetUdpIp}:${this.config.targetUdpPort}`);
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to send device info via UDP: ${JSON.stringify(error)}`);
+      this.log(`Failed to send device info via UDP: ${JSON.stringify(error)}`, 'error');
       throw new Error(`Failed to send device info via UDP: ${JSON.stringify(error)}`);
     }
   }
@@ -591,7 +633,7 @@ export class DeviceMonitor {
   // 启动监控服务
   public async startMonitoring(): Promise<void> {
     if (this.isRunning) {
-      hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Monitor is already running');
+      this.log('Monitor is already running', 'warn');
       return;
     }
 
@@ -604,7 +646,7 @@ export class DeviceMonitor {
           family: 0 
         });
         this.udpSocketBound = true;
-        hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `UDP socket bound to port ${this.config.localUdpPort}`);
+        this.log(`UDP socket bound to port ${this.config.localUdpPort}`);
       }
 
       // 发送初始设备信息
@@ -615,14 +657,14 @@ export class DeviceMonitor {
         try {
           await this.sendDeviceInfoViaUDP();
         } catch (e) {
-          hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error in periodic UDP send: ${JSON.stringify(e)}`);
+          this.log(`Error in periodic UDP send: ${JSON.stringify(e)}`, 'error');
         }
       }, this.config.collectInterval);
 
       this.isRunning = true;
-      hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Device monitoring started successfully');
+      this.log('Device monitoring started successfully');
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to start monitoring: ${JSON.stringify(error)}`);
+      this.log(`Failed to start monitoring: ${JSON.stringify(error)}`, 'error');
       throw new Error(`Failed to start monitoring: ${JSON.stringify(error)}`);
     }
   }
@@ -630,7 +672,7 @@ export class DeviceMonitor {
   // 停止监控服务
   public stopMonitoring(): void {
     if (!this.isRunning) {
-      hilog.warn(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Monitor is not running');
+      this.log('Monitor is not running', 'warn');
       return;
     }
 
@@ -642,9 +684,9 @@ export class DeviceMonitor {
       }
 
       this.isRunning = false;
-      hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Device monitoring stopped successfully');
+      this.log('Device monitoring stopped successfully');
     } catch (error) {
-      hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Failed to stop monitoring: ${JSON.stringify(error)}`);
+      this.log(`Failed to stop monitoring: ${JSON.stringify(error)}`, 'error');
     }
   }
 
@@ -692,7 +734,7 @@ export class DeviceMonitor {
     if (newConfig.collectInterval !== undefined) {
       this.config.collectInterval = newConfig.collectInterval;
     }
-    hilog.info(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, 'Monitor configuration updated');
+    this.log('Monitor configuration updated');
   }
 
   // 清理资源
@@ -700,9 +742,215 @@ export class DeviceMonitor {
     this.stopMonitoring();
     if (this.udpSocketBound) {
       this.udpSocket.close().catch((e: Object) => {
-        hilog.error(DeviceMonitor.DOMAIN, DeviceMonitor.TAG, `Error closing UDP socket: ${JSON.stringify(e)}`);
+        this.log(`Error closing UDP socket: ${JSON.stringify(e)}`, 'error');
       });
       this.udpSocketBound = false;
+    }
+  }
+
+  // =================================================================
+  // 新增：网络管理和设备控制方法
+  // =================================================================
+
+  private ipToInt(ip: string): number {
+    const parts = ip.split('.');
+    if (parts.length !== 4) {
+      return 0; // 无效格式
+    }
+    let result = 0;
+    for (let i = 0; i < 4; i++) {
+      const part = parseInt(parts[i], 10);
+      if (isNaN(part) || part < 0 || part > 255) {
+        return 0; // 无效部分
+      }
+      result |= part << ((3 - i) * 8);
+    }
+    return result >>> 0; // 转换为无符号32位整数
+  }
+
+  public async autoDetectNetworkInterface(): Promise<void> {
+    this.log('Auto-detecting network interface...');
+    try {
+      const defaultNet = await connection.getDefaultNet();
+      if (defaultNet) {
+        const netCaps = await connection.getNetCapabilities(defaultNet);
+        if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_WIFI)) {
+          this.config.networkInterface = 'wlan0';
+          this.log('Default network is Wi-Fi, using interface wlan0');
+        } else if (netCaps.bearerTypes.includes(connection.NetBearType.BEARER_ETHERNET)) {
+          this.config.networkInterface = 'eth0';
+          this.log('Default network is Ethernet, using interface eth0');
+        }
+      } else {
+        this.log('No default network connection detected. Using default wlan0.', 'warn');
+      }
+    } catch (e) {
+      this.log(`Failed to detect network interface: ${JSON.stringify(e)}`, 'error');
+    }
+  }
+
+  public async configureEthernet(iface: string, config: EthernetConfig): Promise<void> {
+    this.log(`Configuring Ethernet interface ${iface}...`);
+    try {
+      const ethConfig: ethernet.InterfaceConfiguration = {
+        mode: ethernet.IPSetMode.STATIC,
+        ipAddr: config.ipAddress,
+        route: "0.0.0.0", // 通常设为0.0.0.0，由网关决定
+        gateway: config.gateway,
+        netMask: config.netmask,
+        dnsServers: config.dns
+      };
+      await ethernet.setIfaceConfig(iface, ethConfig);
+      this.log(`Successfully set Ethernet configuration for ${iface}.`);
+    } catch (error) {
+      const errMsg = `Failed to configure Ethernet: ${JSON.stringify(error)}`;
+      this.log(errMsg, 'error');
+      throw new Error(errMsg);
+    }
+  }
+
+  public async configureWifi(config: WifiConfig): Promise<void> {
+    this.log('Starting Wi-Fi configuration...');
+    try {
+      // 1. 确保Wi-Fi已激活
+      if (!wifi.isWifiActive()) {
+        this.log('Wi-Fi is not active, enabling...');
+        await wifi.enableWifi();
+        await new Promise<void>(resolve => setTimeout(resolve, 2000)); // 等待启动
+        this.log('Wi-Fi enabled.');
+      } else {
+        this.log('Wi-Fi is already active.');
+      }
+
+      // 2. IP地址转换
+      const ipAddressInt = this.ipToInt(config.ipAddress);
+      const gatewayInt = this.ipToInt(config.gateway);
+      const dnsInt = this.ipToInt(config.dns);
+      if (ipAddressInt === 0 || gatewayInt === 0 || dnsInt === 0) {
+        throw new Error('Invalid IP, gateway, or DNS address format.');
+      }
+
+      // 3. 断开当前连接并移除旧配置
+      this.log('Disconnecting current Wi-Fi...');
+      await wifi.disconnect();
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+
+      const existingConfigs = await wifi.getDeviceConfigs();
+      const oldConfig = existingConfigs.find(c => c.ssid === config.ssid);
+      if (oldConfig) {
+        this.log(`Found and removing old config for ${config.ssid} (NetId: ${oldConfig.netId})`);
+        await wifi.disableNetwork(oldConfig.netId);
+        await wifi.removeDevice(oldConfig.netId);
+        this.log('Old config removed.');
+      }
+
+      // 4. 清除DHCP缓存
+      try {
+        await fs.unlink("/data/service/el1/public/dhcp/dhcp_cache.conf");
+        this.log('DHCP cache cleared.');
+      } catch (unlinkError) {
+        this.log(`Could not clear DHCP cache (this may be expected): ${JSON.stringify(unlinkError)}`, 'warn');
+      }
+
+      // 5. 创建并添加新配置
+      const deviceConfig: wifi.WifiDeviceConfig = {
+        ssid: config.ssid,
+        bssid: config.bssid,
+        preSharedKey: config.preSharedKey,
+        isHiddenSsid: config.isHiddenSsid,
+        securityType: config.securityType,
+        creatorUid: 0,
+        disableReason: 0,
+        netId: 0,
+        randomMacType: 0,
+        randomMacAddr: "00:00:00:00:00:00",
+        ipType: wifi.IpType.STATIC,
+        staticIp: {
+          ipAddress: ipAddressInt,
+          gateway: gatewayInt,
+          dnsServers: [dnsInt],
+          domains: ["dc.com"]
+        }
+      };
+
+      this.log('Adding new Wi-Fi configuration...');
+      const newNetId = await wifi.addDeviceConfig(deviceConfig);
+      this.log(`New config added with NetId: ${newNetId}`);
+
+      // 6. 连接到新网络
+      this.log(`Connecting to ${config.ssid}...`);
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      const connectResult = await wifi.connectToNetwork(newNetId);
+      if (connectResult) {
+        this.log(`Successfully sent connection command for ${config.ssid}.`);
+      } else {
+        throw new Error('Failed to send connection command.');
+      }
+    } catch (error) {
+      const err = error as BusinessError;
+      const errMsg = `Wi-Fi configuration failed: ${err.message || JSON.stringify(error)}`;
+      this.log(errMsg, 'error');
+      throw new Error(errMsg);
+    }
+  }
+
+  public async forgetAllWifiNetworks(): Promise<void> {
+    this.log('Clearing all saved Wi-Fi networks...');
+    try {
+      if (!wifi.isWifiActive()) {
+        this.log('Wi-Fi is not active. Please enable Wi-Fi first.', 'warn');
+        return;
+      }
+
+      const savedNetworks = await wifi.getDeviceConfigs();
+      if (savedNetworks.length === 0) {
+        this.log('No saved Wi-Fi networks found.');
+        return;
+      }
+
+      this.log(`Found ${savedNetworks.length} networks. Removing them...`);
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const network of savedNetworks) {
+        try {
+          this.log(`Removing: ${network.ssid} (NetId: ${network.netId})`);
+          await wifi.disableNetwork(network.netId);
+          await wifi.removeDevice(network.netId);
+          successCount++;
+        } catch (innerError) {
+          const err = innerError as BusinessError;
+          this.log(`Failed to remove ${network.ssid}: ${err.message}`, 'error');
+          failCount++;
+        }
+      }
+      this.log(`Operation complete. Succeeded: ${successCount}, Failed: ${failCount}.`);
+      await wifi.disconnect();
+    } catch (error) {
+      const err = error as BusinessError;
+      const errMsg = `Failed to clear all Wi-Fi networks: ${err.message || JSON.stringify(error)}`;
+      this.log(errMsg, 'error');
+      throw new Error(errMsg);
+    }
+  }
+
+  /**
+   * 网络配置统一入口
+   * @param mode 0: Ethernet, 1: Wi-Fi
+   * @param ethConfig EthernetConfig, wifiConfig WifiConfig
+   */
+  public async configureNetwork(mode: number, ethConfig?: EthernetConfig, wifiConfig?: WifiConfig): Promise<void> {
+    switch (mode) {
+      case 0: // 以太网
+        if (!ethConfig) throw new Error('EthernetConfig 参数缺失');
+        await this.configureEthernet('eth0', ethConfig);
+        break;
+      case 1: // Wi-Fi
+        if (!wifiConfig) throw new Error('WifiConfig 参数缺失');
+        await this.configureWifi(wifiConfig);
+        break;
+      default:
+        throw new Error(`未知的配置模式: ${mode}`);
     }
   }
 }
