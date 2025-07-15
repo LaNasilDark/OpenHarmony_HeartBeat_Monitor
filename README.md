@@ -68,6 +68,7 @@ OpenHarmony 设备          网络          监控服务器
 ```
 OpenHarmony_HeartBeat_Monitor/
 ├── README.md                    # 项目说明文档
+├── init.musepaper.cfg           # 设备启动配置文件 (用于修改/proc/stat权限)
 ├── hvigorfile.ts                # Hvigor 编译脚本
 ├── monitor_run.py               # Python 监控服务器
 ├── udp_listener.py              # UDP 监听工具
@@ -358,18 +359,24 @@ pip install psutil netifaces PyYAML
 
 ### 扩展功能开发计划
 
-1. ohos系统内的自启动功能
-2. ~~修改设备静态IP以实现配网功能~~ (已通过Wi-Fi配置API实现)
-3. 远程固件升级（FOTA）?
-4. ~~尝试让磁盘统计可以获取整机而非沙盒内的数据~~
-5. 尝试删除/data/service/el1/public/dhcp/dhcp_cache.conf来清除对已有网络与ip地址的记忆，确保配网的新传入ip生效
-6. 支持有线网络配置
+1. **ohos系统内的自启动功能**: 研究并实现应用开机自启动，确保设备重启后监控服务能自动运行。
+2. ~~**有线网络配置**: 增加对有线网络（Ethernet）的IP地址等配置功能，扩展设备适用性。~~(已完成，但存在一台设备占用两个ip的bug，推测为鸿蒙系统问题)
+3. **清除DHCP缓存**: 为确保Wi-Fi或有线网络配置能立即生效，研究在应用内通过程序化方式清除系统DHCP缓存（例如 `/data/service/el1/public/dhcp/dhcp_cache.conf`），避免因缓存导致IP不更新。
+4. ~~**修改设备静态IP以实现配网功能**~~ (已通过Wi-Fi配置API实现)
+5. ~~**尝试让磁盘统计可以获取整机而非沙盒内的数据**~~ (已通过@ohos.file.storageStatistics实现)
+6. ~~**远程固件升级（FOTA）**~~ (功能过于复杂且超出项目范围，已移除)
 
 ## 技术支持(真的会有吗？)
 
 - 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.4.0 (2025-07-02)
+
+- 📝 **文档**: 更新 `README.md`，添加 `init.musepaper.cfg` 到项目结构中。
+- 📝 **文档**: 澄清了开发指南中的功能规划，移除了已完成或超出范围的条目。
+- ✨ **新增**:支持以太网与wifi的一键配网与更改ip功能，但是鸿蒙系统api目前存在bug，会导致一台设备占据两个ip。
 
 ### v1.3.0 (2025-07-01)
 
