@@ -95,7 +95,7 @@ OpenHarmony_HeartBeat_Monitor/
 
 #### 环境要求
 
-- OpenHarmony SDK 5.0.0.17
+- OpenHarmony SDK 5.0.0.17(https://github.com/LaNasilDark/OpenHarmony-5.0.0-full-sdk/releases/tag/5.0.0.71-full-sdk)
 - DevEco Studio 5.0.5
 - 目标设备：OpenHarmony 系统
 
