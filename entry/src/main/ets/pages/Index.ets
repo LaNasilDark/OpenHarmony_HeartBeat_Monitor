@@ -1,5 +1,6 @@
 import hilog from '@ohos.hilog';
-import { DeviceMonitor, MonitorConfig, DeviceInfo, WifiConfig, EthernetConfig } from '../common/DeviceMonitor';
+import { DeviceMonitor } from '../common/DeviceMonitor';
+import { MonitorConfig, DeviceInfo, WifiConfig, EthernetConfig } from '../common/types';
 import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
 

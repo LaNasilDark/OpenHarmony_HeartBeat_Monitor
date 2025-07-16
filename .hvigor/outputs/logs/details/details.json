@@ -18,21 +18,22 @@
     "IS_HVIGORFILE_TYPE_CHECK": false,
     "TASK_TIME": {
       "1043bfc77febe75fafec0c4309faccf1": {
-        "CreateModuleInfo": 1167000,
-        "ConfigureCmake": 300800,
-        "PreCheckSyscap": 543000,
-        "GeneratePkgContextInfo": 725500,
-        "ProcessIntegratedHsp": 2023800,
-        "BuildNativeWithCmake": 453100,
-        "BuildNativeWithNinja": 1205000,
-        "BuildJS": 2970600
+        "CreateModuleInfo": 1105600,
+        "ConfigureCmake": 275700,
+        "PreCheckSyscap": 320900,
+        "GeneratePkgContextInfo": 530200,
+        "ProcessIntegratedHsp": 1450600,
+        "BuildNativeWithCmake": 301800,
+        "BuildNativeWithNinja": 1085000,
+        "BuildJS": 4667800,
+        "CompileArkTS": 5802465400,
+        "PackageHap": 436632900,
+        "SignHap": 129455500,
+        "CollectDebugSymbol": 2814400,
+        "assembleHap": 299500
       }
     },
-    "TOTAL_TIME": 5956299700,
-    "BUILD_ID": "202507151413184770",
-    "ERROR_MESSAGE": {
-      "CODE": "00000",
-      "TIMESTAMP": "1752560004428"
-    }
+    "TOTAL_TIME": 6641417700,
+    "BUILD_ID": "202507161545065060"
   }
 }
