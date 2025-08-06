@@ -15,6 +15,38 @@ export interface DeviceInfo {
   agentVersion: string;
 }
 
+export interface UpdateTargetIpData {
+  targetIp: string;
+}
+
+export interface RemoteCommand {
+  type: 'configure_wifi' | 'configure_ethernet' | 'forget_wifi' | 'restart_monitor' | 'update_target_ip';
+  data?: WifiConfigData | EthernetConfigData | UpdateTargetIpData;
+  timestamp?: number;
+}
+
+export interface CommandResponse {
+  success: boolean;
+  message: string;
+  timestamp?: number;
+}
+
+export interface WifiConfigData {
+  ssid: string;
+  password: string;
+  ipAddress: string;
+  gateway: string;
+  dns: string;
+  bssid?: string;
+}
+
+export interface EthernetConfigData {
+  ipAddress: string;
+  gateway: string;
+  netmask: string;
+  dns: string;
+}
+
 export interface WifiConfig {
   ssid: string;
   bssid: string;

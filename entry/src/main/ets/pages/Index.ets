@@ -1,8 +1,13 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor } from '../common/DeviceMonitor';
 import { MonitorConfig, DeviceInfo, WifiConfig, EthernetConfig } from '../common/types';
+import { CommandResponse, WifiCommandData, EthernetCommandData, TargetIpCommandData, Command, BaseCommand } from '../common/CommandTypes';
 import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
+import { socket } from '@kit.NetworkKit';
+import { util } from '@kit.ArkTS';
+
+const TextDecoder = util.TextDecoder;
 
 const TAG: string = 'IndexPage';
 const DOMAIN: number = 0x0001;
@@ -28,6 +33,11 @@ struct Index {
   @State runtimeLog: string = '应用日志:\n';
   @State targetIp: string = monitorConfig.targetUdpIp;
 
+  // 配网命令监听
+  @State isCommandListening: boolean = false;
+  private commandSocket: socket.UDPSocket | null = null;
+  private commandListeningPort: number = 9992; // 命令监听端口
+
   // Wi-Fi 配置状态
   @State wifiSsid: string = "JDSK";
   @State wifiBssid: string = "c4:69:f0:e7:4c:81";
@@ -47,6 +57,8 @@ struct Index {
 
   async aboutToAppear() {
     // 在 aboutToAppear 中初始化 monitor
+    
+
     if (!this.monitor) {
       monitorConfig.logCallback = this.addLog.bind(this);
       this.monitor = new DeviceMonitor(monitorConfig);
@@ -57,7 +69,225 @@ struct Index {
     this.addLog('自动配置网络并启动监控服务...');
     await this.configureNetwork(0); // 尝试配置以太网
     await this.startMonitorService();
+
+    await this.startCommandListener();
+
     hilog.info(DOMAIN, TAG, 'Index component is about to appear.');
+  }
+
+  private async startCommandListener(): Promise<void> {
+    if (this.isCommandListening) {
+      this.addLog('命令监听服务已在运行');
+      return;
+    }
+
+    try {
+      this.commandSocket = socket.constructUDPSocketInstance();
+      
+      // 绑定监听端口
+      await this.commandSocket.bind({
+        address: '0.0.0.0',
+        port: this.commandListeningPort,
+        family: 0
+      });
+
+      // 监听消息
+      this.commandSocket.on('message', (value: socket.SocketMessageInfo) => {
+        this.handleCommandMessage(value);
+      });
+
+      // 监听错误
+      this.commandSocket.on('error', (err: BusinessError) => {
+        this.addLog(`命令监听Socket错误: ${err.message}`);
+      });
+
+      // 监听关闭事件
+      this.commandSocket.on('close', () => {
+        this.addLog('命令监听Socket已关闭');
+        this.isCommandListening = false;
+      });
+
+      this.isCommandListening = true;
+      this.addLog(`命令监听服务已启动，监听端口: ${this.commandListeningPort}`);
+    } catch (error) {
+      const err = error as BusinessError;
+      this.addLog(`启动命令监听服务失败: ${err.message}`);
+      throw new Error(`启动命令监听服务失败: ${err.message}`);
+    }
+  }
+
+  private handleCommandMessage(value: socket.SocketMessageInfo): void {
+    try {
+      // 将ArrayBuffer转换为字符串
+      const uint8Array = new Uint8Array(value.message);
+      const messageText = new TextDecoder('utf-8').decode(uint8Array);
+      
+      this.addLog(`收到命令: ${messageText} 来自: ${value.remoteInfo.address}:${value.remoteInfo.port}`);
+      
+      // 解析JSON命令
+      const command = JSON.parse(messageText) as Command;
+      
+      // 将 SocketRemoteInfo 转换为 NetAddress
+      const remoteNetAddress: socket.NetAddress = {
+        address: value.remoteInfo.address,
+        port: value.remoteInfo.port,
+        family: value.remoteInfo.family === 'IPv4' ? 0 : 1
+      };
+      
+      this.processCommand(command, remoteNetAddress);
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.addLog(`解析命令消息失败: ${errorMessage}`);
+    }
+  }
+
+  // 处理具体命令
+  private async processCommand(command: Command, remoteInfo: socket.NetAddress): Promise<void> {
+    try {
+      switch (command.type) {
+        case 'configure_wifi':
+          await this.handleWifiConfigCommand(command.data);
+          break;
+        case 'configure_ethernet':
+          await this.handleEthernetConfigCommand(command.data);
+          break;
+        case 'forget_wifi':
+          await this.handleForgetWifiCommand();
+          break;
+        case 'restart_monitor':
+          await this.handleRestartMonitorCommand();
+          break;
+        case 'update_target_ip':
+          await this.handleUpdateTargetIpCommand(command.data);
+          break;
+        default:
+          this.addLog(`未知命令类型: ${(command as BaseCommand).type}`);
+      }
+      
+      // 发送命令执行结果回复
+      await this.sendCommandResponse(remoteInfo, {
+        success: true,
+        message: `命令 ${command.type} 执行成功`
+      });
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.addLog(`执行命令失败: ${errorMessage}`);
+      await this.sendCommandResponse(remoteInfo, {
+        success: false,
+        message: `命令执行失败: ${errorMessage}`
+      });
+    }
+  }
+
+  // 处理WiFi配网命令
+  private async handleWifiConfigCommand(data: WifiCommandData): Promise<void> {
+    this.addLog('收到WiFi配网命令，正在执行...');
+    
+    // 更新WiFi配置状态
+    if (data.ssid) this.wifiSsid = data.ssid;
+    if (data.password) this.wifiKey = data.password;
+    if (data.ipAddress) this.staticIpAddress = data.ipAddress;
+    if (data.gateway) this.staticGateway = data.gateway;
+    if (data.dns) this.staticDns = data.dns;
+    if (data.bssid) this.wifiBssid = data.bssid;
+    
+    // 停止监控服务并执行配网
+    if (this.isServiceRunning) {
+      this.stopMonitorService();
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+    }
+    
+    await this.configureNetwork(1);
+    
+    // 重新启动监控服务
+    await new Promise<void>(resolve => setTimeout(resolve, 3000));
+    await this.startMonitorService();
+  }
+
+  // 处理以太网配网命令
+  private async handleEthernetConfigCommand(data: EthernetCommandData): Promise<void> {
+    this.addLog('收到以太网配网命令，正在执行...');
+    
+    // 更新以太网配置状态
+    if (data.ipAddress) this.ethIpAddress = data.ipAddress;
+    if (data.gateway) this.ethGateway = data.gateway;
+    if (data.netmask) this.ethNetmask = data.netmask;
+    if (data.dns) this.ethDns = data.dns;
+    
+    // 停止监控服务并执行配网
+    if (this.isServiceRunning) {
+      this.stopMonitorService();
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+    }
+    
+    await this.configureNetwork(0);
+    
+    // 重新启动监控服务
+    await new Promise<void>(resolve => setTimeout(resolve, 3000));
+    await this.startMonitorService();
+  }
+
+  // 处理忘记WiFi命令
+  private async handleForgetWifiCommand(): Promise<void> {
+    this.addLog('收到忘记WiFi命令，正在执行...');
+    await this.monitor?.forgetAllWifiNetworks();
+  }
+
+  // 处理重启监控服务命令
+  private async handleRestartMonitorCommand(): Promise<void> {
+    this.addLog('收到重启监控服务命令，正在执行...');
+    if (this.isServiceRunning) {
+      this.stopMonitorService();
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+    }
+    await this.startMonitorService();
+  }
+
+  // 处理更新目标IP命令
+  private async handleUpdateTargetIpCommand(data: TargetIpCommandData): Promise<void> {
+    this.addLog('收到更新目标IP命令，正在执行...');
+    if (data.targetIp) {
+      this.targetIp = data.targetIp;
+      this.setTargetIp();
+    }
+  }
+
+  // 发送命令响应
+  private async sendCommandResponse(remoteInfo: socket.NetAddress, response: CommandResponse): Promise<void> {
+    if (!this.commandSocket) return;
+    
+    try {
+      const responseText = JSON.stringify(response);
+      const encoder = new util.TextEncoder();
+      const responseBytes = encoder.encode(responseText);
+      
+      await this.commandSocket.send({
+        data: responseBytes.buffer,
+        address: remoteInfo
+      });
+      
+      this.addLog(`命令响应已发送到 ${remoteInfo.address}:${remoteInfo.port}`);
+    } catch (error) {
+      this.addLog(`发送命令响应失败: ${error}`);
+    }
+  }
+
+  // 停止命令监听服务
+  private async stopCommandListener(): Promise<void> {
+    if (!this.isCommandListening || !this.commandSocket) {
+      return;
+    }
+    
+    try {
+      await this.commandSocket.close();
+      this.commandSocket = null;
+      this.isCommandListening = false;
+      this.addLog('命令监听服务已停止');
+    } catch (error) {
+      this.addLog(`停止命令监听服务失败: ${error}`);
+    }
   }
 
   public addLog(log: string): void {
