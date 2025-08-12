@@ -50,6 +50,7 @@ OpenHarmony 设备          网络          监控服务器
   - 支持自定义目标服务器
   - 基于 RFC 1071 的数据完整性校验和
   - 动态IP配置功能
+  - 支持远程配网命令监听（端口9992）
 - ✅ **用户界面**
 
   - 服务启动/停止控制
@@ -70,6 +71,11 @@ OpenHarmony 设备          网络          监控服务器
   - 远程命令执行
   - 网络配置管理
   - 服务状态监控
+- ✅ **配网命令支持**
+
+  - 支持新格式配网命令：`{'set_ip': ip, 'gw': gateway, 'netmask': netmask, 'dns': dns}`
+  - 兼容原有结构化命令格式
+  - 远程设备网络配置
 - ✅ **数据处理**
 
   - JSON 数据解析
@@ -159,7 +165,7 @@ mount -o remount,rw /vendor
 
 用本仓库中的 `init.musepaper.cfg` 文件替换原本的 `init.musepaper.cfg`文件：
 
-*注意：请将文件名中的musepaper换成对应的设备名称*
+> **注意**：请将文件名中的musepaper换成对应的设备名称
 
 ```bash
 hdc file send ./init.musepaper.cfg /vendor/etc/init.musepaper.cfg
@@ -211,7 +217,36 @@ python pytools/udp_listener.py
 python pytools/ipconverter.py
 ```
 
-## 配置说明
+### 命令格式
+
+系统支持两种配网命令格式：
+
+#### 1. 新格式配网命令（推荐）
+
+```json
+{
+  "set_ip": "192.168.5.114",
+  "gw": "192.168.5.1",
+  "netmask": "255.255.255.0", 
+  "dns": "192.168.5.1"
+}
+```
+
+#### 2. 结构化命令格式（兼容）
+
+```json
+{
+  "type": "configure_ethernet",
+  "data": {
+    "ipAddress": "192.168.5.114",
+    "gateway": "192.168.5.1",
+    "netmask": "255.255.255.0",
+    "dns": "192.168.5.1"
+  }
+}
+```
+
+### 配置说明
 
 ### 网络配置
 
@@ -534,13 +569,23 @@ pip install psutil netifaces PyYAML asyncio
 4. ~~**修改设备静态IP以实现配网功能**~~ (已通过Wi-Fi配置API实现)
 5. ~~**尝试让磁盘统计可以获取整机而非沙盒内的数据**~~ (已通过@ohos.file.storageStatistics实现)
 6. ~~**远程固件升级（FOTA）**~~ (功能过于复杂且超出项目范围，已移除)
-7. **添加接受配网指令功能**
+7. ~~**添加接受配网指令功能**~~ (已完成，支持端口9992的UDP命令监听)
 
 ## 技术支持(真的会有吗?)
 
 - 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.6.0 (2025-08-12)
+
+- ✨ **新增**: 支持新格式的配网命令：`{'set_ip': ip, 'gw': gateway, 'netmask': netmask, 'dns': dns}`
+- ✨ **新增**: 增加命令监听服务，支持远程UDP配网命令（端口9992）
+- ✨ **新增**: 完善的TypeScript类型系统，添加 `NewFormatNetworkCommand` 接口
+- 🔧 **改进**: 向后兼容原有结构化命令格式
+- 🔧 **改进**: 优化类型检查和错误处理机制
+- 🐛 **修复**: 解决ArkTS编译错误，移除不支持的语法
+- 📝 **文档**: 更新README，添加新命令格式说明和API文档
 
 ### v1.5.0 (2025-07-16)
 
