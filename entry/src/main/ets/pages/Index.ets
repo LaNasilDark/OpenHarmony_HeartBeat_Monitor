@@ -1,7 +1,7 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor } from '../common/DeviceMonitor';
 import { MonitorConfig, DeviceInfo, WifiConfig, EthernetConfig } from '../common/types';
-import { CommandResponse, WifiCommandData, EthernetCommandData, TargetIpCommandData, Command, BaseCommand } from '../common/CommandTypes';
+import { CommandResponse, WifiCommandData, EthernetCommandData, TargetIpCommandData, Command, BaseCommand, NewFormatNetworkCommand } from '../common/CommandTypes';
 import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
 import { socket } from '@kit.NetworkKit';
@@ -125,7 +125,7 @@ struct Index {
       this.addLog(`收到命令: ${messageText} 来自: ${value.remoteInfo.address}:${value.remoteInfo.port}`);
       
       // 解析JSON命令
-      const command = JSON.parse(messageText);
+      const command: NewFormatNetworkCommand | Command = JSON.parse(messageText) as NewFormatNetworkCommand | Command;
       
       // 将 SocketRemoteInfo 转换为 NetAddress
       const remoteNetAddress: socket.NetAddress = {
@@ -142,12 +142,17 @@ struct Index {
     }
   }
 
+  // 检查是否为新格式网络命令
+  private isNewFormatNetworkCommand(command: NewFormatNetworkCommand | Command): boolean {
+    return (command as NewFormatNetworkCommand).set_ip !== undefined;
+  }
+
   // 处理新格式的命令
-  private async processNewFormatCommand(command: any, remoteInfo: socket.NetAddress): Promise<void> {
+  private async processNewFormatCommand(command: NewFormatNetworkCommand | Command, remoteInfo: socket.NetAddress): Promise<void> {
     try {
       // 检查是否包含网络配置命令字段
-      if (command.set_ip) {
-        await this.handleNewFormatNetworkConfigCommand(command);
+      if (this.isNewFormatNetworkCommand(command)) {
+        await this.handleNewFormatNetworkConfigCommand(command as NewFormatNetworkCommand);
       } else {
         // 如果不是新格式，尝试使用原有的命令处理逻辑
         this.processCommand(command as Command, remoteInfo);
@@ -171,14 +176,14 @@ struct Index {
   }
 
   // 处理新格式的网络配置命令
-  private async handleNewFormatNetworkConfigCommand(command: any): Promise<void> {
+  private async handleNewFormatNetworkConfigCommand(command: NewFormatNetworkCommand): Promise<void> {
     this.addLog('收到新格式网络配置命令，正在执行...');
     
     // 提取配置信息
-    const ipAddress = command.set_ip;
-    const gateway = command.gw;
-    const netmask = command.netmask;
-    const dns = command.dns;
+    const ipAddress: string = command.set_ip;
+    const gateway: string | undefined = command.gw;
+    const netmask: string | undefined = command.netmask;
+    const dns: string | undefined = command.dns;
     
     // 验证必要字段
     if (!ipAddress) {

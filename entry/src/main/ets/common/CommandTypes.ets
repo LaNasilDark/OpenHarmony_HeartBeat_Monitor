@@ -23,6 +23,14 @@ export interface TargetIpCommandData {
   targetIp?: string;
 }
 
+// 新格式的网络配置命令接口
+export interface NewFormatNetworkCommand {
+  set_ip: string;
+  gw?: string;
+  netmask?: string;
+  dns?: string;
+}
+
 export interface BaseCommand {
   type: string;
 }
