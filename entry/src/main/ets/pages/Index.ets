@@ -125,7 +125,7 @@ struct Index {
       this.addLog(`收到命令: ${messageText} 来自: ${value.remoteInfo.address}:${value.remoteInfo.port}`);
       
       // 解析JSON命令
-      const command = JSON.parse(messageText) as Command;
+      const command = JSON.parse(messageText);
       
       // 将 SocketRemoteInfo 转换为 NetAddress
       const remoteNetAddress: socket.NetAddress = {
@@ -134,12 +134,77 @@ struct Index {
         family: value.remoteInfo.family === 'IPv4' ? 0 : 1
       };
       
-      this.processCommand(command, remoteNetAddress);
+      this.processNewFormatCommand(command, remoteNetAddress);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       this.addLog(`解析命令消息失败: ${errorMessage}`);
     }
+  }
+
+  // 处理新格式的命令
+  private async processNewFormatCommand(command: any, remoteInfo: socket.NetAddress): Promise<void> {
+    try {
+      // 检查是否包含网络配置命令字段
+      if (command.set_ip) {
+        await this.handleNewFormatNetworkConfigCommand(command);
+      } else {
+        // 如果不是新格式，尝试使用原有的命令处理逻辑
+        this.processCommand(command as Command, remoteInfo);
+        return;
+      }
+      
+      // 发送命令执行结果回复
+      await this.sendCommandResponse(remoteInfo, {
+        success: true,
+        message: '网络配置命令执行成功'
+      });
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.addLog(`执行命令失败: ${errorMessage}`);
+      await this.sendCommandResponse(remoteInfo, {
+        success: false,
+        message: `命令执行失败: ${errorMessage}`
+      });
+    }
+  }
+
+  // 处理新格式的网络配置命令
+  private async handleNewFormatNetworkConfigCommand(command: any): Promise<void> {
+    this.addLog('收到新格式网络配置命令，正在执行...');
+    
+    // 提取配置信息
+    const ipAddress = command.set_ip;
+    const gateway = command.gw;
+    const netmask = command.netmask;
+    const dns = command.dns;
+    
+    // 验证必要字段
+    if (!ipAddress) {
+      throw new Error('缺少必要的IP地址字段');
+    }
+    
+    // 更新以太网配置状态
+    if (ipAddress) this.ethIpAddress = ipAddress;
+    if (gateway) this.ethGateway = gateway;
+    if (netmask) this.ethNetmask = netmask;
+    if (dns) this.ethDns = dns;
+    
+    this.addLog(`配置网络: IP=${ipAddress}, 网关=${gateway}, 子网掩码=${netmask}, DNS=${dns}`);
+    
+    // 停止监控服务并执行配网
+    if (this.isServiceRunning) {
+      this.stopMonitorService();
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // 配置以太网
+    await this.configureNetwork(0);
+    
+    // 重新启动监控服务
+    await new Promise<void>(resolve => setTimeout(resolve, 3000));
+    await this.startMonitorService();
   }
 
   // 处理具体命令
