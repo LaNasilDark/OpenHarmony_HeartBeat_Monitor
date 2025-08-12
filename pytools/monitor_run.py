@@ -6,7 +6,7 @@
 @contact: simin.gong@spacemit.com
 @file: udpclient.py
 @date: 2025/2/7 09:39 
-@desc:
+@desc: pyyaml  netifaces psutil 依赖这三个库，使用pyinstaller打包
 """
 import asyncio
 import json
@@ -27,23 +27,24 @@ monitor_cmd = 'bash -c export LANG="en_US";export LANGUAGE="en_US";export LC_ALL
                 'spacemit_separator;df -h;echo spacemit_separator;sleep 1;free;echo spacemit_separator;uptime;echo ' \
                 'spacemit_separator;cat /proc/net/dev;echo spacemit_separator;df -h;echo spacemit_separator;top -b -n ' \
                 '1 | head -n 30 ;echo spacemit_separator; '
-#无任何其他地方调用
 
 update_url = None
-can_use_urls = ['http://10.0.56.20:8081/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.bianbu.xyz/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.spacemit.com/resource/install_update.sh']
+can_use_urls = ['http://10.255.60.102:32081/repository/images/bianbucloud/install_update.sh', 'http://10.0.56.20:8081/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.bianbu.xyz/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.spacemit.com/resource/install_update.sh']
 
-VERSION = '0.0.3'
+VERSION = '0.0.8'
 TIMEOUE = None
 node_ip = None
 will_ip = None
+server_ip = '255.255.255.255'
 will_interface = 'end0'
 home_path = os.path.expanduser("~")
 record_cloud_file = os.path.join(home_path, '.cloud')
+record_server_ip = os.path.join(home_path, '.server')
 
 """
 network:
     version: 2
-    renderer: networkd
+    renderer: NetworkManager
     ethernets:
         end0:
             dhcp4: no
@@ -87,7 +88,26 @@ def load_dict_from_json():
         pass
     return {}
 
-def change_code_server_password(new_password):      #无任何地方调用
+
+def save_ip_to_file(ip: str) -> bool:
+    try:
+        with open(record_server_ip, 'w') as f:
+            f.write(ip.strip())
+        return True
+    except Exception as e:
+        print(f"保存 IP 失败: {e}")
+        return False
+
+
+def read_ip_from_file() -> str | None:
+    try:
+        with open(record_server_ip, 'r') as f:
+            return f.read().strip()
+    except Exception as e:
+        print(f"读取 服务 IP 失败: {e}")
+        return None
+
+def change_code_server_password(new_password):
     config_file = os.path.expanduser('~/.config/code-server/config.yaml')
     try:
         with open(config_file, 'r') as file:
@@ -118,7 +138,7 @@ def calculate_checksum(data):
     return s
 
 
-def build_udp_packet(udp_msg): #json.dumps
+def build_udp_packet(udp_msg):
     udp_msg = bytes(udp_msg, encoding='utf-8')
     checksum = calculate_checksum(udp_msg)
     packet = struct.pack('!H', checksum) + udp_msg
@@ -141,7 +161,7 @@ async def run_command(command, callback=None):
     )
     stdout = ''
     while True:
-        output = await process.stdout.readline() # type: ignore
+        output = await process.stdout.readline()
         if not output:
             break
         if callback is not None:
@@ -157,10 +177,10 @@ async def run_command_with_timeout(command, timeout=2, callback=None, ex_callbac
     except asyncio.TimeoutError:
         if ex_callback is not None:
             ex_callback(TIMEOUE)
-        print(f'time out error: {command} {timeout}')
+        print('time out error: {} {}'.format(command, timeout))
         return TIMEOUE
 
-def search_node(): #无任何调用
+def search_node():
     mac, _ = get_interface_mac_ip()
     global node_ip
     node_flag = 'node:'
@@ -173,12 +193,10 @@ def search_node(): #无任何调用
 def send_udp_broadcast(info_dict):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    broadcast_address = ('255.255.255.255', 18887)
-
+    broadcast_address = (server_ip, 18887)
     message =  build_udp_packet(json.dumps(info_dict))
-    client_socket.sendto(message, broadcast_address) #发送二进制msg到addr
-    
-    try: #返回接受到的第一个响应
+    client_socket.sendto(message, broadcast_address)
+    try:
         client_socket.settimeout(5)
         while True:
             packet, addr = client_socket.recvfrom(1024)
@@ -193,7 +211,9 @@ def send_udp_broadcast(info_dict):
     finally:
         client_socket.close()
 
-def get_interface_mac_ip(intf = 'end0'): #本机IP?
+
+
+def get_interface_mac_ip(intf = 'end0'):
     interfaces = netifaces.interfaces()
     for interface in interfaces:
         addrs = netifaces.ifaddresses(interface)
@@ -203,10 +223,9 @@ def get_interface_mac_ip(intf = 'end0'): #本机IP?
     return None, None
 
 def check_updater_url():
-    """
-    can_use_urls = ['http://10.0.56.20:8081/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.bianbu.xyz/repository/images/bianbucloud/install_update.sh', 'https://cloudfile.spacemit.com/resource/install_update.sh']
-    """
     global update_url
+    if update_url:
+        return
     for url in can_use_urls:
         if is_webpage_accessible_urllib(url):
             update_url = url
@@ -227,7 +246,7 @@ async def check_updater_service():
 async def set_ip(ip, netmask='255.255.254.0', gw='10.0.71.254', dns=None):
     if dns is None:
         dns = ['8.8.8.8']
-    if not await configure_network(will_interface, ip, gw, netmask, dns): 
+    if not await configure_network(will_interface, ip, gw, netmask, dns):
         await run_command_with_timeout(f'ifconfig {will_interface} down')
         await asyncio.sleep(10)
         await run_command_with_timeout(f'ifconfig {will_interface} {ip} netmask {netmask} up')
@@ -253,7 +272,6 @@ async def configure_network(interface: str, ip_address: str, gateway: str, netma
         config_data = {
             "network": {
                 "version": 2,
-                "renderer": "networkd",
                 "ethernets": {}
             }
         }
@@ -264,7 +282,6 @@ async def configure_network(interface: str, ip_address: str, gateway: str, netma
     if "network" not in config_data or "ethernets" not in config_data["network"]:
         config_data["network"] = {
             "version": 2,
-            "renderer": "networkd",
             "ethernets": {}
         }
 
@@ -308,7 +325,6 @@ def is_network_interface_down(interface_name):
         print(f"读取网卡状态文件时出现错误: {e}")
         return True
 
-# 读取一系列设备数据
 def read_sn():
     file_path = '/proc/device-tree/serial-number'
     sn_str = cat_file(file_path)
@@ -316,11 +332,18 @@ def read_sn():
         return None
     return sn_str.rstrip('\x00')
 
+def read_p1():
+    p1_register = '/sys/kernel/debug/regmap/8-0041/registers'
+    p1_str = cat_file(p1_register)
+    if p1_str is None:
+        return None
+    return p1_str.rstrip('\x00')
+
 def read_tmp():
     file_path = '/sys/class/thermal/thermal_zone0/temp'
     return cat_file(file_path)
 
-def get_uptime_days(): #/proc/uptime读取
+def get_uptime_days():
     boot_time = psutil.boot_time()
     current_time = time.time()
     uptime_seconds = current_time - boot_time
@@ -328,15 +351,16 @@ def get_uptime_days(): #/proc/uptime读取
     return uptime_days
 
 sn = read_sn()
-
+p1 = read_p1()
 async def monitor_device():
+    import psutil
     monitor_info = {}
     # 获取 CPU 占用率
-    cpu_percent = psutil.cpu_percent(interval=1) #proc/stat 
+    cpu_percent = psutil.cpu_percent(interval=1)
     monitor_info['cpuLoad'] = cpu_percent
 
     # 获取内存信息
-    memory = psutil.virtual_memory() #proc/meminfo
+    memory = psutil.virtual_memory()
     total_memory = memory.total
     memory_percent = memory.percent
     memory_used = memory.used
@@ -344,7 +368,7 @@ async def monitor_device():
     monitor_info['memInfo'] = {'memTotal': round(total_memory, 2), 'memLoad': round(memory_percent, 2), 'memUsed': round(memory_used, 2),  'memAvailable': round(memory_av, 2), 'unit': 'Byte'}
 
     # 获取磁盘信息
-    disk = psutil.disk_usage('/') #proc/diskstats
+    disk = psutil.disk_usage('/')
     total_disk = disk.total
     disk_percent = disk.percent
     disk_used = disk.used
@@ -352,7 +376,7 @@ async def monitor_device():
     monitor_info['disk'] = {'mounted':'/', 'available':round(disk_av, 2),  'total': round(total_disk, 2), 'percent': int(disk_percent), 'used': round(disk_used, 2), 'unit': 'Byte'}
 
     # 获取网络上下行速率
-    net_io_counters1 = psutil.net_io_counters() #proc/net/dev
+    net_io_counters1 = psutil.net_io_counters()
     bytes_sent1 = net_io_counters1.bytes_sent
     bytes_recv1 = net_io_counters1.bytes_recv
 
@@ -367,9 +391,8 @@ async def monitor_device():
     send_rate = bytes_sent2 - bytes_sent1
     recv_rate = bytes_recv2 - bytes_recv1
     monitor_info['net'] = {'netInterface': '', 'txByte': bytes_sent2, 'txRate': send_rate, 'rxByte': bytes_recv2, 'rxRate': recv_rate, 'unit': 'Bytes/s'}
-    
     mac, ip = get_interface_mac_ip(will_interface)
-    monitor_info['mac'] = mac 
+    monitor_info['mac'] = mac
     monitor_info['ip'] = ip
     monitor_info['upTime'] = get_uptime_days()
     monitor_info['time'] = time.time()
@@ -387,11 +410,11 @@ async def deal_set_ip(cmd):
     netmask = cmd.get('netmask', '255.255.254.0')
     gw = cmd.get('gw', '10.0.71.254')
     dns = cmd.get('dns', ['8.8.8.8'])
-    print(f'将设置ip地址为: {_ip} 掩码地址 {netmask} 网关 {gw}')
+    print(f'将设置ip地址为: {_ip} 掩码地址 {netmask} 网关 {gw} DNS {dns}')
     await set_ip(_ip, netmask, gw, dns)
 
 async def handle_msg_fun(msg):
-
+    global server_ip
     if msg is None:
         return
     try:
@@ -402,8 +425,20 @@ async def handle_msg_fun(msg):
         await deal_set_ip(cmd)
     if 'set_cmd' in cmd:
         _cmd = cmd['set_cmd']
-        _timeout = cmd.get('timeout', 20)
+        _timeout = getattr(cmd, 'timeout', 20)
         await run_command_with_timeout(_cmd, timeout=_timeout)
+    if 'server_ping' in cmd:
+        remote_server_ip = cmd['server_ping']
+        if server_ip != remote_server_ip:
+            server_ip = remote_server_ip
+            save_ip_to_file(remote_server_ip)
+
+
+def check_server_ip(ip):
+    global server_ip
+    if ip == server_ip:
+        return
+
 
 
 def get_nic_ips():
@@ -441,54 +476,48 @@ async def find_connectable_nics():
     :return: 列表，包含可以联网的网卡名
     """
     nets = await run_command_with_timeout(cat_interface_cmd)
-    nic_ips = nets.strip().split('\n') # type: ignore
+    nic_ips = nets.strip().split('\n')
     return nic_ips
 
 async def run_main():
     global will_interface
     global will_ip
-    #init
+    global server_ip
+    cache_ip = read_ip_from_file()
+    if cache_ip:
+        server_ip = cache_ip
     try:
         nics = await find_connectable_nics()
-        if nics: # 简化条件判断
+        if len(nics) != 0:
             intf = nics[0]
-            print(f'匹配网卡：{intf}') # 使用 f-string
+            print('匹配网卡：', intf)
             will_interface = intf
-            # 明确传递接口名称
-            mac, ip = get_interface_mac_ip(will_interface)
+            mac, ip = get_interface_mac_ip()
             if ip:
                 will_ip = ip
-                print(f'当前ip为：{will_ip}') # 使用 f-string
+                print('当前ip为：', will_ip)
         if not is_webpage_accessible_urllib('https://www.baidu.com/'):
             print('无法访问网络')
             record_cmd = load_dict_from_json()
             if 'set_ip' in record_cmd:
                 await deal_set_ip(record_cmd)
-    except Exception as e: # 捕获并打印初始化阶段的错误
-        print(f"初始化网络设置时发生错误: {e}")
-    # check update
-    check_updater_url()
-    
+    except Exception:
+        pass
+
     while True:
-        #启动时间
         start_time = time.time()
-        
         try:
+            check_updater_url()
             if is_network_interface_down(will_interface):
-                if will_ip is None:
-                    await run_command_with_timeout(f'ifconfig {will_interface} up')
-                else:
+                await run_command_with_timeout(f'ifconfig {will_interface} up')
+                if will_ip:
                     await set_ip(will_ip)
-
             monitor_info = await monitor_device()
-            
-            msg = send_udp_broadcast(monitor_info) #上游发回的响应
-
+            msg = send_udp_broadcast(monitor_info)
             await handle_msg_fun(msg)
-
-            await check_updater_service()
+            # await check_updater_service()
         except Exception as error:
-            print(f"主循环中发生错误: {error}") # 使用 f-string 并提供更明确的错误信息
+            print(error)
         need_sleep = 5 - (time.time() - start_time)
         if need_sleep > 0:
             await asyncio.sleep(need_sleep)
