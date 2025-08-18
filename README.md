@@ -51,6 +51,7 @@ OpenHarmony 设备          网络          监控服务器
   - 基于 RFC 1071 的数据完整性校验和
   - 动态IP配置功能
   - 支持远程配网命令监听（端口9992）
+  - **动态服务器发现和切换**：支持通过 `server_ping` 命令实现服务器热切换和故障转移
 - ✅ **用户界面**
 
   - 服务启动/停止控制
@@ -332,6 +333,74 @@ BUFFER_SIZE = 4096         # 缓冲区大小
 }
 ```
 
+## 高级功能
+
+### 动态服务器发现和切换
+
+系统支持动态服务器发现和切换功能，实现服务器的故障转移和负载均衡。
+
+#### 功能特性
+
+- **自动服务器发现**: 接收到来自不同服务器的 ping 命令时自动切换
+- **服务器IP持久化**: 新服务器IP自动保存到本地文件，重启后保持
+- **热切换**: 运行时无需重启即可切换到新服务器
+- **故障转移**: 支持主备服务器自动切换
+
+#### 使用方法
+
+向设备的**9992端口**发送UDP命令来实现服务器切换：
+
+```json
+{
+  "server_ping": "192.168.1.200"
+}
+```
+
+#### Python测试脚本示例
+
+```python
+import socket
+import json
+
+def send_server_ping(device_ip, new_server_ip):
+    """发送服务器切换命令"""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    command = {"server_ping": new_server_ip}
+    message = json.dumps(command).encode('utf-8')
+    sock.sendto(message, (device_ip, 9992))
+    sock.close()
+    print(f"Server ping sent to {device_ip}, new server: {new_server_ip}")
+
+# 使用示例
+send_server_ping("192.168.5.114", "192.168.1.200")
+```
+
+#### 工作流程
+
+1. **设备启动**: 从本地文件加载上次保存的服务器IP
+2. **接收命令**: 监听9992端口的UDP server_ping命令
+3. **IP比较**: 比较当前目标服务器IP与接收到的IP
+4. **自动切换**: 如果IP不同则更新配置并保存到文件
+5. **响应确认**: 向发送方返回切换结果
+
+#### 应用场景
+
+- **服务器故障转移**: 主服务器故障时自动切换到备用服务器
+- **负载均衡**: 根据网络条件动态分配监控服务器
+- **多环境部署**: 在开发、测试、生产环境间灵活切换
+- **远程运维**: 通过UDP命令远程更改设备的目标服务器
+
+#### 日志示例
+
+```text
+[14:30:25.123] 收到命令: {"server_ping":"192.168.1.200"} 来自: 192.168.1.100:12345
+[14:30:25.124] 收到服务器Ping命令，远程服务器IP: 192.168.1.200
+[14:30:25.125] Received server ping from: 192.168.1.200
+[14:30:25.126] Switching server from 192.168.5.5 to 192.168.1.200
+[14:30:25.127] Server IP saved to file: 192.168.1.200
+[14:30:25.128] Server switched successfully to: 192.168.1.200
+```
+
 ## API 文档
 
 ### 核心函数
@@ -354,6 +423,12 @@ class DeviceMonitor {
   async startMonitoring(): Promise<void>
   stopMonitoring(): void
   isMonitoringRunning(): boolean
+  
+  // 动态服务器发现和切换
+  async handleServerPingCommand(remoteServerIp: string): Promise<void>
+  async initializeServerIpFromFile(): Promise<void>
+  private async saveServerIpToFile(serverIp: string): Promise<void>
+  private async loadServerIpFromFile(): Promise<string | null>
   
   // 数据管理
   getDeviceDataSnapshot(): DeviceDataCache
@@ -407,6 +482,17 @@ interface MonitorConfig {
   collectInterval: number;
   logCallback?: (message: string) => void;
 }
+
+// 服务器Ping命令接口
+interface ServerPingCommand {
+  server_ping: string; // 服务器IP地址
+}
+
+// 命令处理接口
+interface CommandResponse {
+  success: boolean;
+  message: string;
+}
 ```
 
 #### Python API
@@ -437,7 +523,11 @@ async def handle_udp_data(data: bytes, addr: tuple) -> None
 // OpenHarmony 应用中 - 启动设备监控
 const monitor = new DeviceMonitor(monitorConfig);
 await monitor.autoDetectNetworkInterface(); // 自动检测网络接口
+await monitor.initializeServerIpFromFile(); // 从文件加载保存的服务器IP
 await monitor.startMonitoring(); // 开始监控服务
+
+// 动态服务器切换
+await monitor.handleServerPingCommand("192.168.1.200"); // 切换到新服务器
 
 // 配置网络 - Wi-Fi
 const wifiConfig: WifiConfig = {
@@ -570,12 +660,25 @@ pip install psutil netifaces PyYAML asyncio
 5. ~~**尝试让磁盘统计可以获取整机而非沙盒内的数据**~~ (已通过@ohos.file.storageStatistics实现)
 6. ~~**远程固件升级（FOTA）**~~ (功能过于复杂且超出项目范围，已移除)
 7. ~~**添加接受配网指令功能**~~ (已完成，支持端口9992的UDP命令监听)
+8. ~~**动态服务器发现和切换功能**~~ (已完成，支持通过server_ping命令实现服务器热切换和故障转移)
 
 ## 技术支持(真的会有吗?)
 
 - 📧 Email: [123090669@link.cuhk.edu.cn](mailto:123090669@link.cuhk.edu.cn)
 
 ## 更新日志
+
+### v1.7.0 (2025-08-18)
+
+- ✨ **新增**: 动态服务器发现和切换功能
+  - 支持通过UDP `server_ping` 命令实现服务器热切换
+  - 服务器IP自动持久化保存到本地文件
+  - 应用重启后自动加载保存的服务器IP
+  - 支持故障转移和负载均衡场景
+- ✨ **新增**: 完善的文件IO操作，支持服务器配置的持久化存储
+- 🔧 **改进**: 优化UDP命令处理逻辑，支持更多命令类型
+- 🔧 **改进**: 增强错误处理机制，提高系统稳定性
+- 📝 **文档**: 更新README，添加动态服务器发现功能的详细说明和使用示例
 
 ### v1.6.0 (2025-08-12)
 
