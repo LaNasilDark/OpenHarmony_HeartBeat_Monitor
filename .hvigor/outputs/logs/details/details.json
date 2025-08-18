@@ -15,23 +15,30 @@
     "IS_HVIGORFILE_TYPE_CHECK": false,
     "TASK_TIME": {
       "1043bfc77febe75fafec0c4309faccf1": {
-        "CreateModuleInfo": 1911100,
-        "PreCheckSyscap": 546100,
-        "GeneratePkgContextInfo": 520700,
-        "PreviewProcessResource": 2653500,
-        "PreviewCompileResource": 267122500,
-        "PreviewHookCompileResource": 256700,
-        "CopyPreviewProfile": 6950900,
-        "ReplacePreviewerPage": 311300,
-        "buildPreviewerResource": 184300,
-        "PreviewUpdateAssets": 2362800
+        "init": 640300,
+        "CreateModuleInfo": 2072300,
+        "MergeProfile": 12553600,
+        "CreateBuildProfile": 4250600,
+        "PreCheckSyscap": 623000,
+        "GeneratePkgContextInfo": 1389700,
+        "ProcessProfile": 271745400,
+        "ProcessRouterMap": 6233900,
+        "PreviewProcessResource": 3384000,
+        "GenerateLoaderJson": 23103200,
+        "PreviewCompileResource": 372819900,
+        "PreviewHookCompileResource": 315200,
+        "CopyPreviewProfile": 7226200,
+        "ReplacePreviewerPage": 541700,
+        "buildPreviewerResource": 293600,
+        "PreviewUpdateAssets": 3316000,
+        "PreviewArkTS": 9510807500,
+        "PreviewBuild": 291200
+      },
+      "APP": {
+        "init": 258500
       }
     },
-    "TOTAL_TIME": 7956928200,
-    "BUILD_ID": "202508121050311400",
-    "ERROR_MESSAGE": {
-      "CODE": "00000",
-      "TIMESTAMP": "1754967039090"
-    }
+    "BUILD_ID": "202508150950425880",
+    "TOTAL_TIME": 10605536300
   }
 }

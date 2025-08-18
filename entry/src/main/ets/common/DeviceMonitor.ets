@@ -1,6 +1,7 @@
 import hilog from '@ohos.hilog';
 import socket from '@ohos.net.socket';
 import util from '@ohos.util';
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { SystemInfoCollector } from './SystemInfoCollector';
 import { NetworkManager } from './NetworkManager';
 import {
@@ -32,6 +33,7 @@ export class DeviceMonitor {
   private static readonly DOMAIN: number = 0x0001;
   private static readonly INTERVAL: number = 3000;
   private static readonly TIME_OUT: number = 10000;
+  private static readonly SERVER_IP_FILE_PATH: string = '/data/storage/el2/base/haps/entry/files/.server';
 
   private config: MonitorConfig;
   private udpSocket: socket.UDPSocket;
@@ -384,6 +386,99 @@ export class DeviceMonitor {
         this.log(`Error closing UDP socket: ${this.formatError(e)}`, 'error');
       });
       this.udpSocketBound = false;
+    }
+  }
+
+  // =================================================================
+  // 服务器IP持久化方法 - 用于动态服务器发现和切换
+  // =================================================================
+
+  // 保存服务器IP到文件
+  private async saveServerIpToFile(serverIp: string): Promise<void> {
+    let file: fs.File | null = null;
+    try {
+      const encoder = new util.TextEncoder();
+      const data = encoder.encode(serverIp);
+      file = await fs.open(DeviceMonitor.SERVER_IP_FILE_PATH, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
+      await fs.write(file.fd, data.buffer);
+      this.log(`Server IP saved to file: ${serverIp}`);
+    } catch (error) {
+      this.log(`Failed to save server IP to file: ${this.formatError(error)}`, 'error');
+    } finally {
+      if (file) {
+        try {
+          await fs.close(file.fd);
+        } catch (closeError) {
+          this.log(`Failed to close file: ${this.formatError(closeError)}`, 'error');
+        }
+      }
+    }
+  }
+
+  // 从文件加载服务器IP
+  private async loadServerIpFromFile(): Promise<string | null> {
+    let file: fs.File | null = null;
+    try {
+      const stat = await fs.stat(DeviceMonitor.SERVER_IP_FILE_PATH);
+      if (stat.size > 0) {
+        file = await fs.open(DeviceMonitor.SERVER_IP_FILE_PATH, fs.OpenMode.READ_ONLY);
+        const buffer = new ArrayBuffer(1024);
+        const bytesRead = await fs.read(file.fd, buffer);
+        const decoder = new util.TextDecoder();
+        const serverIp = decoder.decode(new Uint8Array(buffer, 0, bytesRead));
+        this.log(`Server IP loaded from file: ${serverIp}`);
+        return serverIp.trim();
+      }
+    } catch (error) {
+      this.log(`Failed to load server IP from file: ${this.formatError(error)}`, 'warn');
+    } finally {
+      if (file) {
+        try {
+          await fs.close(file.fd);
+        } catch (closeError) {
+          this.log(`Failed to close file: ${this.formatError(closeError)}`, 'error');
+        }
+      }
+    }
+    return null;
+  }
+
+  // 处理服务器Ping命令 - 实现动态服务器发现和切换
+  public async handleServerPingCommand(remoteServerIp: string): Promise<void> {
+    try {
+      this.log(`Received server ping from: ${remoteServerIp}`);
+      
+      // 检查当前目标IP是否与接收到的服务器IP不同
+      if (this.config.targetUdpIp !== remoteServerIp) {
+        this.log(`Switching server from ${this.config.targetUdpIp} to ${remoteServerIp}`);
+        
+        // 更新配置中的目标IP
+        this.config.targetUdpIp = remoteServerIp;
+        
+        // 保存新的服务器IP到文件
+        await this.saveServerIpToFile(remoteServerIp);
+        
+        this.log(`Server switched successfully to: ${remoteServerIp}`);
+      } else {
+        this.log(`Server ping received from current server: ${remoteServerIp}`);
+      }
+    } catch (error) {
+      this.log(`Failed to handle server ping command: ${this.formatError(error)}`, 'error');
+      throw new Error(`Failed to handle server ping command: ${this.formatError(error)}`);
+    }
+  }
+
+  // 初始化时从文件加载服务器IP
+  public async initializeServerIpFromFile(): Promise<void> {
+    try {
+      const savedServerIp = await this.loadServerIpFromFile();
+      if (savedServerIp && savedServerIp !== this.config.targetUdpIp) {
+        this.log(`Loading saved server IP: ${savedServerIp}`);
+        this.config.targetUdpIp = savedServerIp;
+        this.log(`Target UDP IP updated from saved file: ${savedServerIp}`);
+      }
+    } catch (error) {
+      this.log(`Failed to initialize server IP from file: ${this.formatError(error)}`, 'warn');
     }
   }
 

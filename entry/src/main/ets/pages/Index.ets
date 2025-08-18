@@ -1,7 +1,7 @@
 import hilog from '@ohos.hilog';
 import { DeviceMonitor } from '../common/DeviceMonitor';
 import { MonitorConfig, DeviceInfo, WifiConfig, EthernetConfig } from '../common/types';
-import { CommandResponse, WifiCommandData, EthernetCommandData, TargetIpCommandData, Command, BaseCommand, NewFormatNetworkCommand } from '../common/CommandTypes';
+import { CommandResponse, WifiCommandData, EthernetCommandData, TargetIpCommandData, Command, BaseCommand, NewFormatNetworkCommand, ServerPingCommand } from '../common/CommandTypes';
 import wifi from '@ohos.wifi';
 import { BusinessError } from '@ohos.base';
 import { socket } from '@kit.NetworkKit';
@@ -47,7 +47,7 @@ struct Index {
   @State staticDns: string = "10.0.2.2";
 
   // 以太网配置状态
-  @State ethIpAddress: string = "192.168.5.114";
+  @State ethIpAddress: string = "192.168.5.25";
   @State ethGateway: string = "192.168.5.1";
   @State ethNetmask: string = "255.255.255.0";
   @State ethDns: string = "192.168.5.1";
@@ -66,6 +66,8 @@ struct Index {
 
     this.addLog('组件即将加载...');
     await this.monitor.autoDetectNetworkInterface();
+    // 初始化时从文件加载保存的服务器IP
+    await this.monitor.initializeServerIpFromFile();
     this.addLog('自动配置网络并启动监控服务...');
     await this.configureNetwork(0); // 尝试配置以太网
     await this.startMonitorService();
@@ -125,7 +127,7 @@ struct Index {
       this.addLog(`收到命令: ${messageText} 来自: ${value.remoteInfo.address}:${value.remoteInfo.port}`);
       
       // 解析JSON命令
-      const command: NewFormatNetworkCommand | Command = JSON.parse(messageText) as NewFormatNetworkCommand | Command;
+      const command: NewFormatNetworkCommand | Command | ServerPingCommand = JSON.parse(messageText) as NewFormatNetworkCommand | Command | ServerPingCommand;
       
       // 将 SocketRemoteInfo 转换为 NetAddress
       const remoteNetAddress: socket.NetAddress = {
@@ -143,13 +145,24 @@ struct Index {
   }
 
   // 检查是否为新格式网络命令
-  private isNewFormatNetworkCommand(command: NewFormatNetworkCommand | Command): boolean {
+  private isNewFormatNetworkCommand(command: NewFormatNetworkCommand | Command | ServerPingCommand): boolean {
     return (command as NewFormatNetworkCommand).set_ip !== undefined;
   }
 
+  // 检查是否为服务器Ping命令
+  private isServerPingCommand(command: NewFormatNetworkCommand | Command | ServerPingCommand): boolean {
+    return (command as ServerPingCommand).server_ping !== undefined;
+  }
+
   // 处理新格式的命令
-  private async processNewFormatCommand(command: NewFormatNetworkCommand | Command, remoteInfo: socket.NetAddress): Promise<void> {
+  private async processNewFormatCommand(command: NewFormatNetworkCommand | Command | ServerPingCommand, remoteInfo: socket.NetAddress): Promise<void> {
     try {
+      // 检查是否为服务器Ping命令
+      if (this.isServerPingCommand(command)) {
+        await this.handleServerPingCommand(command as ServerPingCommand, remoteInfo);
+        return;
+      }
+      
       // 检查是否包含网络配置命令字段
       if (this.isNewFormatNetworkCommand(command)) {
         await this.handleNewFormatNetworkConfigCommand(command as NewFormatNetworkCommand);
@@ -321,6 +334,42 @@ struct Index {
     if (data.targetIp) {
       this.targetIp = data.targetIp;
       this.setTargetIp();
+    }
+  }
+
+  // 处理服务器Ping命令 - 实现动态服务器发现和切换
+  private async handleServerPingCommand(command: ServerPingCommand, remoteInfo: socket.NetAddress): Promise<void> {
+    try {
+      const remoteServerIp = command.server_ping;
+      this.addLog(`收到服务器Ping命令，远程服务器IP: ${remoteServerIp}`);
+      
+      if (!this.monitor) {
+        throw new Error('Monitor实例未初始化');
+      }
+      
+      // 调用DeviceMonitor的处理方法
+      await this.monitor.handleServerPingCommand(remoteServerIp);
+      
+      // 更新UI中的目标IP显示
+      this.targetIp = remoteServerIp;
+      
+      // 发送成功响应
+      await this.sendCommandResponse(remoteInfo, {
+        success: true,
+        message: `服务器切换成功，新目标IP: ${remoteServerIp}`
+      });
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.addLog(`处理服务器Ping命令失败: ${errorMessage}`);
+      
+      // 发送失败响应
+      await this.sendCommandResponse(remoteInfo, {
+        success: false,
+        message: `服务器切换失败: ${errorMessage}`
+      });
+      
+      throw new Error(errorMessage);
     }
   }
 

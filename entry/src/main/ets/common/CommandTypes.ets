@@ -31,6 +31,11 @@ export interface NewFormatNetworkCommand {
   dns?: string;
 }
 
+// 服务器Ping命令接口 - 用于动态服务器发现
+export interface ServerPingCommand {
+  server_ping: string; // 服务器IP地址
+}
+
 export interface BaseCommand {
   type: string;
 }
