@@ -265,9 +265,9 @@ const monitorConfig: MonitorConfig = {
 
 // Wi-Fi 配置示例
 const wifiConfig: WifiConfig = {
-  ssid: "JDSK",
-  bssid: "c4:69:f0:e7:4c:81",
-  preSharedKey: "SpaceT20211102",
+  ssid: "YOURWIFINAME",
+  bssid: "c4:69:f0:e7:4c:81",  //对应wifi名称的bssid
+  preSharedKey: "yourWIFIpassword",
   isHiddenSsid: false,
   securityType: wifi.WifiSecurityType.WIFI_SEC_TYPE_WPA2_PSK,
   ipAddress: "10.0.90.200",

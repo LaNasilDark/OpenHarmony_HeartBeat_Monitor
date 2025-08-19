@@ -23,7 +23,6 @@ const monitorConfig: MonitorConfig = {
   collectInterval: 5000 // 5秒
 };
 
-
 @Entry
 @Component
 struct Index {
@@ -57,8 +56,6 @@ struct Index {
 
   async aboutToAppear() {
     // 在 aboutToAppear 中初始化 monitor
-    
-
     if (!this.monitor) {
       monitorConfig.logCallback = this.addLog.bind(this);
       this.monitor = new DeviceMonitor(monitorConfig);
@@ -474,7 +471,6 @@ struct Index {
       .width('90%')
       .margin({ top: 10 })
       .justifyContent(FlexAlign.Center)
-
 
       // 日志显示区域
       Scroll() {
